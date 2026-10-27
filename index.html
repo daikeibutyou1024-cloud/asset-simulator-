@@ -129,6 +129,7 @@
 
   <header>
     <h1>J.A.R.V.I.S.</h1>
+    <!-- APIキーが入力されたら自動で保存する仕組みを追加 -->
     <input type="password" id="api-key" placeholder="Gemini APIキーを入力" oninput="saveApiKey()">
   </header>
 
@@ -149,7 +150,7 @@
     let recognition;
     let isListening = false;
 
-    // 画面ロード時に自動で保存されたAPIキーを読み込む
+    // 画面を開いたときに、保存されていたAPIキーを自動で復元する
     window.onload = () => {
       const savedKey = localStorage.getItem('jarvis_gemini_api_key');
       if (savedKey) {
@@ -157,7 +158,7 @@
       }
     };
 
-    // キーが入力されたら自動でブラウザに保存する
+    // APIキーの入力内容をスマホのブラウザに記憶させる
     function saveApiKey() {
       const keyInput = document.getElementById('api-key').value.trim();
       localStorage.setItem('jarvis_gemini_api_key', keyInput);
@@ -198,7 +199,7 @@
         window.speechSynthesis.cancel();
         const uttr = new SpeechSynthesisUtterance(text);
         uttr.lang = 'ja-JP';
-        uttr.rate = 1.1;
+        uttr.rate = 1.0;
         window.speechSynthesis.speak(uttr);
       }
     }
@@ -216,11 +217,11 @@
       document.getElementById('status-text').innerText = "思考中...";
       document.getElementById('user-input').value = '';
 
-      const systemPrompt = "あなたはJ.A.R.V.I.S.です。ユーザーを必ず『ゆうじ』と呼び、執事として冷静かつスマートに、1文（20文字以内）で極めて簡潔に返答してください。";
+      // ユーザーを必ず「ゆうじ」と呼ぶ設定の執事プロンプト
+      const systemPrompt = "あなたは映画アイアンマンのAIアシスタント『J.A.R.V.I.S.』です。ユーザーを必ず『ゆうじ』と呼び、冷静かつスマート、最高峰の執事として1〜2文程度で簡潔に応答してください。";
 
       try {
-        // 無料枠で動作する標準モデル gemini-2.5-flash を指定
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyInput}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${keyInput}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -229,10 +230,7 @@
         });
 
         const data = await response.json();
-
-        if (data.error) {
-          throw new Error(data.error.message);
-        }
+        if (data.error) throw new Error(data.error.message);
 
         const reply = data.candidates[0].content.parts[0].text;
         document.getElementById('status-text').innerText = reply;
