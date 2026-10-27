@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイAIエージェント</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f7f7f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header {
+            background: #ffffff;
+            padding: 15px;
+            border-bottom: 1px solid #e5e5e5;
+            text-align: center;
+            font-weight: bold;
+        }
+        .settings {
+            padding: 10px;
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+            font-size: 14px;
+        }
+        .settings input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .user {
+            background: #2563eb;
+            color: white;
+            align-self: flex-end;
+        }
+        .assistant {
+            background: #e5e7eb;
+            color: #1f2937;
+            align-self: flex-start;
+        }
+        .input-area {
+            display: flex;
+            padding: 10px;
+            background: #ffffff;
+            border-top: 1px solid #e5e5e5;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        .input-area button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            margin-left: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<header>マイAIエージェント</header>
+
+<div class="settings">
+    <label for="apikey">OpenAI APIキーを入力:</label>
+    <input type="password" id="apikey" placeholder="sk-...">
+</div>
+
+<div id="chat-container">
+    <div class="message assistant">こんにちは！何かお手伝いできることはありますか？</div>
+</div>
+
+<div class="input-area">
+    <input type="text" id="user-input" placeholder="メッセージを入力..." onkeypress="if(event.key === 'F Enter' || event.key === 'Enter') sendMessage()">
+    <button onclick="sendMessage()">送信</button>
+</div>
+
+<script>
+    async function sendMessage() {
+        const apiKey = document.getElementById('apikey').value.trim();
+        const inputField = document.getElementById('user-input');
+        const text = inputField.value.trim();
+        const chatContainer = document.getElementById('chat-container');
+
+        if (!apiKey) {
+            alert('上部にOpenAIのAPIキーを入力してください');
+            return;
+        }
+        if (!text) return;
+
+        // ユーザーのメッセージを表示
+        const userMsg = document.createElement('div');
+        userMsg.className = 'message user';
+        userMsg.textContent = text;
+        chatContainer.appendChild(userMsg);
+        inputField.value = '';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // AIの返答用枠を作成
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'message assistant';
+        aiMsg.textContent = '思考中...';
+        chatContainer.appendChild(aiMsg);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [{ role: 'user', content: text }]
+                })
+            });
+
+            const data = await response.json();
+            if (data.choices && data.choices.length > 0) {
+                aiMsg.textContent = data.choices[0].message.content;
+            } else {
+                aiMsg.textContent = 'エラーが発生しました。';
+            }
+        } catch (error) {
+            aiMsg.textContent = '通信エラーが発生しました。';
+        }
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
