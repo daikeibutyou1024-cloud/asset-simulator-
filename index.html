@@ -209,13 +209,32 @@
       }
       if (!userInput) return;
 
-      document.getElementById('status-text').innerText = "思考中...";
+      document.getElementById('status-text').innerText = "モデルを確認中...";
       document.getElementById('user-input').value = '';
 
       const systemPrompt = "あなたは映画アイアンマンのAIアシスタント『J.A.R.V.I.S.』です。ユーザーを『ゆうじ』と呼び、冷静かつスマート、最高峰の執事として1〜2文程度で簡潔に応答してください。";
 
       try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${keyInput}`, {
+        // 利用可能なモデルを自動検出
+        let modelEndpoint = "models/gemini-1.5-flash";
+        try {
+          const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${keyInput}`);
+          const listData = await listRes.json();
+          if (listData.models) {
+            const valid = listData.models.find(m => m.name.includes('flash') && m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
+            if (valid) {
+              modelEndpoint = valid.name;
+            } else if (listData.models.length > 0) {
+              modelEndpoint = listData.models[0].name;
+            }
+          }
+        } catch (e) {
+          // 失敗時はデフォルトを使用
+        }
+
+        document.getElementById('status-text').innerText = "思考中...";
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelEndpoint}:generateContent?key=${keyInput}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
