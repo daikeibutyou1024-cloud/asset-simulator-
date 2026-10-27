@@ -168,7 +168,13 @@
     }
 
     function toggleSpeech() {
+      const keyInput = document.getElementById('api-key').value.trim();
+      if (!keyInput) {
+        alert("先に上部の入力欄にGemini APIキーを入力してください！");
+        return;
+      }
       if (!recognition) return alert("お使いのブラウザは音声入力に対応していません。");
+      
       if (isListening) {
         recognition.stop();
       } else {
@@ -196,7 +202,11 @@
     async function sendMessage() {
       const keyInput = document.getElementById('api-key').value.trim();
       const userInput = document.getElementById('user-input').value.trim();
-      if (!keyInput) return alert('Gemini APIキーを入力してください');
+      
+      if (!keyInput) {
+        alert('Gemini APIキーを入力してください');
+        return;
+      }
       if (!userInput) return;
 
       document.getElementById('status-text').innerText = "思考中...";
