@@ -129,7 +129,7 @@
 
   <header>
     <h1>J.A.R.V.I.S.</h1>
-    <input type="password" id="api-key" placeholder="Claude APIキーを入力 (sk-ant-...)" oninput="saveApiKey()">
+    <input type="password" id="api-key" placeholder="Claude APIキーを入力 (sk-ant-api03-...)" oninput="saveApiKey()">
   </header>
 
   <div class="jarvis-container" id="jarvis-orb" onclick="toggleSpeech()">
@@ -226,7 +226,7 @@
             'anthropic-dangerous-direct-browser-access': 'true'
           },
           body: JSON.stringify({
-            model: "claude-3-5-haiku-20241022", // 最新のHaikuモデルに変更
+            model: "claude-3-haiku-20240307",
             max_tokens: 150,
             system: systemPrompt,
             messages: [{ role: "user", content: userInput }]
