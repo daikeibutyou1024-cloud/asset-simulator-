@@ -1,252 +1,597 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>J.A.R.V.I.S. (Claude Edition)</title>
+  <meta name="theme-color" content="#050b14">
+  <title>J.A.R.V.I.S. - AI Assistant</title>
+
   <style>
     * { box-sizing: border-box; }
+
     body {
-      background-color: #050b14;
+      background: #050b14;
       color: #00f0ff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      overflow: hidden;
+      overflow-x: hidden;
     }
-    
+
     header {
       width: 100%;
-      padding: 15px 20px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-      background: linear-gradient(180deg, rgba(0,240,255,0.1) 0%, rgba(0,0,0,0) 100%);
+      gap: 12px;
+      background: linear-gradient(
+        180deg, rgba(0,240,255,.1), transparent
+      );
     }
+
     h1 {
       margin: 0;
-      font-size: 1.2rem;
-      letter-spacing: 4px;
+      font-size: 1.4rem;
+      letter-spacing: 5px;
       text-shadow: 0 0 10px #00f0ff;
     }
-    input[type="password"], input[type="text"] {
-      background: rgba(0, 15, 30, 0.8);
+
+    .subtitle {
+      font-size: .7rem;
+      letter-spacing: 3px;
+      opacity: .7;
+    }
+
+    input {
+      background: rgba(0,15,30,.9);
       border: 1px solid #00f0ff;
       color: #00f0ff;
-      padding: 8px 12px;
+      padding: 12px;
       border-radius: 20px;
       outline: none;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0,240,255,0.2);
+      min-width: 0;
+      font-size: 16px;
     }
-    #api-key { width: 80%; max-width: 320px; font-size: 0.8rem; }
+
+    input::placeholder { color: #6baeb7; }
+
+    #api-key {
+      width: 90%;
+      max-width: 380px;
+    }
+
+    .security-note {
+      font-size: 11px;
+      opacity: .7;
+      text-align: center;
+      max-width: 360px;
+      line-height: 1.6;
+    }
 
     .jarvis-container {
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 200px;
-      height: 200px;
+      width: 220px;
+      height: 220px;
       cursor: pointer;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
     }
+
     .orb {
       width: 120px;
       height: 120px;
       border-radius: 50%;
-      background: radial-gradient(circle, #00f0ff 0%, rgba(0,100,255,0.8) 50%, rgba(0,0,0,0) 70%);
-      box-shadow: 0 0 30px #00f0ff, inset 0 0 20px #fff;
-      transition: all 0.3s ease;
+      background: radial-gradient(
+        circle, #b9ffff 0%, #00aaff 35%,
+        rgba(0,100,255,.5) 60%, transparent 75%
+      );
+      box-shadow: 0 0 35px #00f0ff,
+        inset 0 0 20px #fff;
       animation: float 4s ease-in-out infinite;
+      transition: .3s;
     }
+
     .ring {
       position: absolute;
-      width: 160px;
-      height: 160px;
+      width: 165px;
+      height: 165px;
       border-radius: 50%;
       border: 2px dashed #00f0ff;
-      opacity: 0.5;
+      opacity: .65;
       animation: spin 10s linear infinite;
     }
-    .jarvis-container.listening .orb {
-      transform: scale(1.3);
-      background: radial-gradient(circle, #ff0055 0%, rgba(255,0,100,0.8) 50%, rgba(0,0,0,0) 70%);
-      box-shadow: 0 0 50px #ff0055, inset 0 0 30px #fff;
+
+    .ring::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,240,255,.3);
     }
+
+    .jarvis-container.listening .orb {
+      transform: scale(1.2);
+      background: radial-gradient(
+        circle, #fff 0%, #ff0055 35%,
+        rgba(255,0,100,.5) 65%, transparent 75%
+      );
+      box-shadow: 0 0 50px #ff0055;
+    }
+
     .jarvis-container.listening .ring {
       border-color: #ff0055;
-      animation: spin 2s linear infinite;
+      animation-duration: 2s;
     }
 
     .status-area {
-      width: 90%;
-      max-width: 500px;
-      text-align: center;
-      margin-bottom: 20px;
+      width: 92%;
+      max-width: 520px;
+      padding: 0 0 24px;
       display: flex;
       flex-direction: column;
       gap: 15px;
     }
+
     #status-text {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      min-height: 60px;
-      text-shadow: 0 0 8px rgba(0,240,255,0.8);
-      word-wrap: break-word;
+      min-height: 70px;
+      line-height: 1.8;
+      text-align: center;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      text-shadow: 0 0 8px rgba(0,240,255,.4);
     }
+
     .input-group {
       display: flex;
       gap: 8px;
     }
-    #user-input {
-      flex: 1;
-      text-align: left;
-    }
+
+    #user-input { flex: 1; width: 0; }
+
     button {
       background: #00f0ff;
       color: #050b14;
       border: none;
-      padding: 8px 16px;
+      padding: 11px 18px;
       border-radius: 20px;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 0 10px #00f0ff;
+      box-shadow: 0 0 10px rgba(0,240,255,.5);
+      white-space: nowrap;
     }
 
-    @keyframes spin { 100% { transform: rotate(360deg); } }
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .secondary {
+      color: #00f0ff;
+      background: transparent;
+      border: 1px solid #00f0ff;
+      box-shadow: none;
+    }
+
+    .footer {
+      font-size: 10px;
+      opacity: .45;
+      text-align: center;
+      padding: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -10px; }
+    }
+
+    @media (max-height: 650px) {
+      .jarvis-container {
+        width: 160px;
+        height: 160px;
+      }
+      .orb { width: 95px; height: 95px; }
+      .ring { width: 130px; height: 130px; }
+      header { padding: 12px; }
+      .status-area { padding-bottom: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+      }
     }
   </style>
 </head>
-<body>
 
+<body>
   <header>
     <h1>J.A.R.V.I.S.</h1>
-    <input type="password" id="api-key" placeholder="Claude APIキーを入力 (sk-ant-api03-...)" oninput="saveApiKey()">
+    <div class="subtitle">PERSONAL AI ASSISTANT</div>
+
+    <input
+      type="password"
+      id="api-key"
+      placeholder="Claude APIキーを入力"
+      autocomplete="off"
+      spellcheck="false"
+    >
+
+    <div class="security-note">
+      APIキーはこのページに保存されません。
+      公開サイトではサーバー経由での接続を推奨します。
+    </div>
   </header>
 
-  <div class="jarvis-container" id="jarvis-orb" onclick="toggleSpeech()">
+  <div
+    class="jarvis-container"
+    id="jarvis-orb"
+    role="button"
+    tabindex="0"
+    aria-label="音声入力を開始または停止"
+  >
     <div class="ring"></div>
     <div class="orb"></div>
   </div>
 
   <div class="status-area">
-    <div id="status-text">オーブをタップして話しかけてください、ゆうじ。</div>
+    <div id="status-text" aria-live="polite">
+      オーブをタップして話しかけてください。
+    </div>
+
     <div class="input-group">
-      <input type="text" id="user-input" placeholder="テキストで指示を入力..." onkeypress="handleKey(event)">
-      <button onclick="sendMessage()">送信</button>
+      <input
+        type="text"
+        id="user-input"
+        placeholder="テキストで指示を入力..."
+        autocomplete="off"
+      >
+      <button id="send-button" type="button">送信</button>
+    </div>
+
+    <div class="controls">
+      <button id="voice-button" class="secondary" type="button">
+        音声入力
+      </button>
+      <button id="stop-button" class="secondary" type="button">
+        読み上げ停止
+      </button>
+      <button id="clear-button" class="secondary" type="button">
+        会話リセット
+      </button>
     </div>
   </div>
 
+  <div class="footer">
+    J.A.R.V.I.S. AI SYSTEM
+  </div>
+
   <script>
-    let recognition;
+    "use strict";
+
+    // 現行のClaude Haikuモデル
+    const MODEL = "claude-haiku-5-5";
+
+    const SYSTEM_PROMPT = `
+あなたは映画アイアンマンのAIアシスタントをイメージした
+J.A.R.V.I.S.という日本語AIアシスタントです。
+
+ユーザーを「ゆうじ」と呼んでください。
+冷静でスマートな執事のように、丁寧な日本語で回答してください。
+基本は1〜3文程度で簡潔に答えてください。
+複雑な質問には必要な説明を加えてください。
+知らない情報を事実のように断言しないでください。
+`;
+
+    const $ = (id) => document.getElementById(id);
+
+    const apiKeyInput = $("api-key");
+    const userInput = $("user-input");
+    const statusText = $("status-text");
+    const orb = $("jarvis-orb");
+    const sendButton = $("send-button");
+    const voiceButton = $("voice-button");
+
+    let recognition = null;
     let isListening = false;
+    let isSending = false;
 
-    window.onload = () => {
-      const savedKey = localStorage.getItem('jarvis_claude_api_key');
-      if (savedKey) {
-        document.getElementById('api-key').value = savedKey;
-      }
-    };
+    // 会話の文脈を保持する
+    let conversation = [];
 
-    function saveApiKey() {
-      const keyInput = document.getElementById('api-key').value.trim();
-      localStorage.setItem('jarvis_claude_api_key', keyInput);
+    function setStatus(message) {
+      statusText.textContent = message;
     }
 
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.lang = 'ja-JP';
+    function setBusy(busy) {
+      isSending = busy;
+      sendButton.disabled = busy;
+      userInput.disabled = busy;
+      sendButton.textContent = busy ? "処理中..." : "送信";
+    }
+
+    // 音声読み上げ
+    function speak(text) {
+      if (!("speechSynthesis" in window)) return;
+
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "ja-JP";
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeaking() {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    // 音声認識の初期設定
+    const SpeechRecognitionAPI =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (SpeechRecognitionAPI) {
+      recognition = new SpeechRecognitionAPI();
+      recognition.lang = "ja-JP";
       recognition.interimResults = false;
+      recognition.continuous = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        isListening = true;
+        orb.classList.add("listening");
+        setStatus("聴取中です。どうぞ、お話しください。");
+      };
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('user-input').value = transcript;
+        const transcript =
+          event.results[0][0].transcript;
+
+        userInput.value = transcript;
         sendMessage();
+      };
+
+      recognition.onerror = (event) => {
+        if (event.error === "not-allowed") {
+          setStatus(
+            "マイクの使用が許可されていません。ブラウザの設定をご確認ください。"
+          );
+        } else if (event.error !== "no-speech") {
+          setStatus(
+            "音声入力エラー: " + event.error
+          );
+        }
       };
 
       recognition.onend = () => {
         isListening = false;
-        document.getElementById('jarvis-orb').classList.remove('listening');
+        orb.classList.remove("listening");
       };
+    } else {
+      voiceButton.disabled = true;
+      voiceButton.title =
+        "このブラウザは音声認識に対応していません。";
     }
 
     function toggleSpeech() {
-      if (!recognition) return alert("お使いのブラウザは音声入力に対応していません。");
+      if (!recognition) {
+        setStatus(
+          "音声入力に対応していません。テキスト入力をご利用ください。"
+        );
+        return;
+      }
+
       if (isListening) {
         recognition.stop();
-      } else {
-        recognition.start();
-        isListening = true;
-        document.getElementById('jarvis-orb').classList.add('listening');
-        document.getElementById('status-text').innerText = "聴取中...";
+        return;
       }
-    }
-
-    function speak(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const uttr = new SpeechSynthesisUtterance(text);
-        uttr.lang = 'ja-JP';
-        uttr.rate = 1.0;
-        window.speechSynthesis.speak(uttr);
-      }
-    }
-
-    function handleKey(e) {
-      if (e.key === 'Enter') sendMessage();
-    }
-
-    async function sendMessage() {
-      const keyInput = document.getElementById('api-key').value.trim();
-      const userInput = document.getElementById('user-input').value.trim();
-      if (!keyInput) return alert('ClaudeのAPIキーを入力してください');
-      if (!userInput) return;
-
-      document.getElementById('status-text').innerText = "思考中...";
-      document.getElementById('user-input').value = '';
-
-      const systemPrompt = "あなたは映画アイアンマンのAIアシスタント『J.A.R.V.I.S.』です。ユーザーを必ず『ゆうじ』と呼び、冷静かつスマート、最高峰の執事として1〜2文程度で簡潔に応答してください。";
 
       try {
-        const response = await fetch("https://api.anthropic.com/v1/messages", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': keyInput,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true'
-          },
-          body: JSON.stringify({
-            model: "claude-3-haiku-20240307",
-            max_tokens: 150,
-            system: systemPrompt,
-            messages: [{ role: "user", content: userInput }]
-          })
-        });
-
-        const data = await response.json();
-        
-        if (data.error) {
-          throw new Error(`${data.error.type}: ${data.error.message}`);
-        }
-
-        const reply = data.content[0].text;
-        document.getElementById('status-text').innerText = reply;
-        speak(reply);
-
-      } catch (err) {
-        document.getElementById('status-text').innerText = `エラー: ${err.message}`;
+        recognition.start();
+      } catch (error) {
+        setStatus(
+          "音声入力を開始できません。少し待ってからお試しください。"
+        );
       }
     }
+
+    // APIエラーを日本語で案内する
+    function explainApiError(status, data) {
+      const message =
+        data?.error?.message ||
+        data?.message ||
+        "詳細不明のエラー";
+
+      if (status === 401) {
+        return "APIキーが正しくない可能性があります。キーを確認してください。";
+      }
+
+      if (status === 403) {
+        return "APIへのアクセスが拒否されました。利用権限やAPI設定を確認してください。";
+      }
+
+      if (status === 404) {
+        return "モデルが見つからないか、利用できません。モデルIDとAPIの利用環境を確認してください。";
+      }
+
+      if (status === 429) {
+        return "APIの利用上限またはレート制限に達しました。利用状況を確認してください。";
+      }
+
+      if (status >= 500) {
+        return "Claude API側でエラーが発生しました。時間をおいて再度お試しください。";
+      }
+
+      return `APIエラー (${status}): ${message}`;
+    }
+
+    // Claude APIにメッセージを送信
+    async function sendMessage() {
+      if (isSending) return;
+
+      const apiKey = apiKeyInput.value.trim();
+      const message = userInput.value.trim();
+
+      if (!apiKey) {
+        setStatus("ClaudeのAPIキーを入力してください。");
+        apiKeyInput.focus();
+        return;
+      }
+
+      if (!message) return;
+
+      userInput.value = "";
+      setBusy(true);
+      stopSpeaking();
+      setStatus("ゆうじ、ただいま思考中です...");
+
+      const userMessage = {
+        role: "user",
+        content: message
+      };
+
+      try {
+        const response = await fetch(
+          "https://api.anthropic.com/v1/messages",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": apiKey,
+              "anthropic-version": "2023-06-01",
+              "anthropic-dangerous-direct-browser-access": "true"
+            },
+            body: JSON.stringify({
+              model: MODEL,
+              max_tokens: 512,
+              system: SYSTEM_PROMPT,
+              messages: [
+                ...conversation,
+                userMessage
+              ]
+            })
+          }
+        );
+
+        let data;
+
+        try {
+          data = await response.json();
+        } catch {
+          throw new Error(
+            "APIから正しいJSON応答を受け取れませんでした。"
+          );
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            explainApiError(response.status, data)
+          );
+        }
+
+        if (!Array.isArray(data.content)) {
+          throw new Error(
+            "APIの応答形式が想定と異なります。"
+          );
+        }
+
+        const reply = data.content
+          .filter((item) => item.type === "text")
+          .map((item) => item.text)
+          .join("\n")
+          .trim();
+
+        if (!reply) {
+          throw new Error(
+            "AIからテキストの回答が返ってきませんでした。"
+          );
+        }
+
+        // 成功した会話だけ履歴に追加する
+        conversation.push(userMessage);
+        conversation.push({
+          role: "assistant",
+          content: reply
+        });
+
+        // 会話履歴が増えすぎないようにする
+        if (conversation.length > 20) {
+          conversation = conversation.slice(-20);
+        }
+
+        setStatus(reply);
+        speak(reply);
+
+      } catch (error) {
+        setStatus(
+          "エラー: " +
+          (error.message || "通信に失敗しました。")
+        );
+      } finally {
+        setBusy(false);
+        userInput.focus();
+      }
+    }
+
+    // ボタン・キーボード操作
+    sendButton.addEventListener("click", sendMessage);
+
+    userInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.isComposing) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+
+    orb.addEventListener("click", toggleSpeech);
+
+    orb.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleSpeech();
+      }
+    });
+
+    voiceButton.addEventListener(
+      "click", toggleSpeech
+    );
+
+    $("stop-button").addEventListener(
+      "click", stopSpeaking
+    );
+
+    $("clear-button").addEventListener("click", () => {
+      conversation = [];
+      stopSpeaking();
+      setStatus(
+        "会話履歴をリセットしました。ゆうじ、次のご指示をどうぞ。"
+      );
+    });
   </script>
 </body>
 </html>
