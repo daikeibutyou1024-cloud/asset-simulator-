@@ -4,279 +4,570 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#050b14">
-<title>J.A.R.V.I.S. - Personal AI</title>
+<meta name="theme-color" content="#030814">
+<title>J.A.R.V.I.S. — AI Command Center</title>
 <style>
+:root{
+  --bg:#030814;
+  --panel:rgba(7,20,39,.88);
+  --line:rgba(60,198,255,.25);
+  --cyan:#57eaff;
+  --blue:#168cff;
+  --green:#58ffc2;
+  --text:#e6f8ff;
+  --muted:#7898b5;
+}
 *{box-sizing:border-box}
 body{
- margin:0;min-height:100vh;background:#050b14;color:#00f0ff;
- font-family:system-ui,-apple-system,sans-serif;
- display:flex;flex-direction:column;align-items:center;
+  margin:0;min-height:100vh;color:var(--text);
+  font-family:Arial,"Noto Sans JP",sans-serif;
+  background:
+    radial-gradient(ellipse at 50% 35%,#0a2648 0%,transparent 48%),
+    radial-gradient(ellipse at 50% 100%,#07172c 0%,transparent 60%),
+    var(--bg);
+  overflow-x:hidden;
 }
-header{
- width:100%;padding:22px 16px;text-align:center;
- background:linear-gradient(180deg,#06243a,transparent);
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;
+  background-image:linear-gradient(#1a6c9b22 1px,transparent 1px),
+  linear-gradient(90deg,#1a6c9b22 1px,transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(to bottom,black,transparent 90%);
 }
-h1{font-size:26px;letter-spacing:5px;margin:0;text-shadow:0 0 12px #00f0ff}
-.subtitle{font-size:10px;letter-spacing:3px;margin:8px 0 18px;opacity:.7}
-input,textarea{
- width:100%;min-width:0;padding:13px;border-radius:12px;
- border:1px solid #087c94;background:#071522;color:#d8fcff;
- font:inherit;outline:none;
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
+  outline:2px solid var(--cyan);outline-offset:3px
 }
-input:focus,textarea:focus{border-color:#00f0ff}
-#api-key{max-width:420px}
-.note{font-size:11px;line-height:1.6;opacity:.7;max-width:420px;margin:8px auto}
-.orb-area{height:220px;width:220px;display:grid;place-items:center;position:relative;margin:12px auto}
+.topbar{
+  position:relative;z-index:2;display:flex;justify-content:space-between;
+  align-items:center;gap:12px;padding:16px 25px;
+  border-bottom:1px solid var(--line);
+  background:#030814dd;backdrop-filter:blur(12px)
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  width:43px;height:43px;border:1px solid var(--cyan);
+  border-radius:50%;display:grid;place-items:center;
+  color:var(--cyan);font-size:22px;
+  box-shadow:0 0 20px #35dfff45,inset 0 0 12px #35dfff22
+}
+.brand h1{font-size:19px;letter-spacing:4px;margin:0}
+.brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:2px;margin-top:5px}
+.top-right{display:flex;align-items:center;gap:12px}
+.online{
+  color:var(--green);font-size:10px;letter-spacing:1px;
+  border:1px solid #2b8a70;border-radius:20px;padding:8px 11px
+}
+.online i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;box-shadow:0 0 10px var(--green)}
+.clock{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.shell{max-width:1550px;margin:auto;padding:20px 22px 30px;position:relative;z-index:1}
+.heading{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:17px}
+.kicker{color:var(--cyan);font-size:10px;letter-spacing:3px}
+h2{font-size:24px;letter-spacing:1px;margin:7px 0}
+.sub{font-size:12px;color:var(--muted);line-height:1.7}
+.demo{font-size:10px;color:#ffd78a;border:1px solid #765b2c;padding:7px 10px;border-radius:5px;white-space:nowrap}
+.dashboard{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,.78fr);
+  gap:15px;align-items:stretch
+}
+.panel{
+  min-width:0;background:linear-gradient(145deg,rgba(9,26,48,.92),rgba(4,13,28,.92));
+  border:1px solid var(--line);border-radius:13px;
+  box-shadow:0 0 24px #0002,inset 0 1px #ffffff05;
+  padding:16px;position:relative
+}
+.panel:before{
+  content:"";position:absolute;left:14px;top:-1px;width:48px;height:1px;background:var(--cyan);
+  box-shadow:0 0 9px var(--cyan)
+}
+.panel-title{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;margin-bottom:13px
+}
+.panel-title h3{font-size:12px;letter-spacing:1.5px;margin:0}
+.panel-title span{font-size:9px;color:var(--muted);letter-spacing:1px}
+.core-panel{overflow:hidden;text-align:center;min-height:445px}
+.core-panel:after{
+  content:"";position:absolute;width:340px;height:340px;border-radius:50%;
+  background:#078bff13;filter:blur(35px);left:50%;top:40px;
+  transform:translateX(-50%);pointer-events:none
+}
+.core-stage{
+  position:relative;z-index:1;display:grid;place-items:center;
+  min-height:285px;overflow:hidden
+}
+.orb-wrap{
+  width:250px;height:250px;position:relative;
+  display:grid;place-items:center;flex-shrink:0
+}
+.orb-halo{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,#1ac9ff17 0%,transparent 67%);
+  filter:blur(4px)
+}
+.orb-ring{
+  position:absolute;inset:7px;border-radius:50%;
+  border:1px solid #50e8ff9c;
+  box-shadow:0 0 15px #0ebdff1c,inset 0 0 15px #0ebdff13;
+  animation:rotate 20s linear infinite
+}
+.orb-ring:before{
+  content:"";position:absolute;inset:18px;border:1px dashed #47baff86;border-radius:50%
+}
+.orb-ring:after{
+  content:"";position:absolute;left:-7px;right:-7px;top:50%;
+  height:1px;background:linear-gradient(90deg,transparent,#58edff,transparent);
+  box-shadow:0 0 9px var(--cyan)
+}
+.orb-ring-two{
+  position:absolute;inset:29px;border:1px solid #298bff8a;
+  border-radius:50%;transform:rotateX(68deg) rotate(-25deg);
+  box-shadow:0 0 14px #238bff24;
+  animation:rotate-reverse 15s linear infinite
+}
+.orb-ring-three{
+  position:absolute;inset:34px;border:1px dashed #56eaff60;
+  border-radius:50%;transform:rotateY(67deg) rotate(18deg);
+  animation:rotate 13s linear infinite
+}
 .orb{
- width:115px;height:115px;border-radius:50%;
- background:radial-gradient(circle,#dfffff,#00aaff 35%,#0752a4 60%,transparent 75%);
- box-shadow:0 0 35px #00dfff,inset 0 0 18px white;
- animation:float 4s ease-in-out infinite;
+  position:relative;width:137px;height:137px;border-radius:50%;
+  background:
+    radial-gradient(circle at 32% 25%,#ffffff 0%,#bafaff 5%,#4ce7ff 14%,#168eff 33%,#0751bd 56%,#05152f 74%,#010611 82%);
+  box-shadow:0 0 18px #39dfff,0 0 48px #098bff8c,0 0 95px #0575ff32,
+    inset -12px -15px 25px #01091c,inset 7px 7px 22px #c0ffffb8;
+  animation:orb-pulse 4s ease-in-out infinite
 }
-.ring{position:absolute;width:165px;height:165px;border:2px dashed #00f0ff;border-radius:50%;animation:spin 12s linear infinite}
-.orb-area.listening .orb{background:radial-gradient(circle,#fff,#ff0055 40%,transparent 75%);box-shadow:0 0 45px #ff0055}
-.orb-area.listening .ring{border-color:#ff0055}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes float{50%{transform:translateY(-8px)}}
-main{width:92%;max-width:600px;padding-bottom:24px}
-#status{
- min-height:90px;padding:14px;line-height:1.8;white-space:pre-wrap;
- overflow-wrap:anywhere;border:1px solid #123b4b;border-radius:14px;
- background:#071522;margin-bottom:14px;
+.orb:before{
+  content:"";position:absolute;inset:8px;border-radius:50%;
+  border:1px solid #c7ffff85;
+  background:linear-gradient(135deg,#ffffff25,transparent 42%,#37bfff17)
 }
-label{display:block;font-size:12px;margin:12px 0 6px;opacity:.85}
-.row{display:flex;gap:8px}
-.row input{flex:1}
-button{
- border:0;border-radius:12px;padding:12px 16px;font-weight:700;
- background:#00eaff;color:#03101a;cursor:pointer;
+.orb:after{
+  content:"";position:absolute;left:20%;top:16%;width:20%;height:12%;
+  border-radius:50%;background:#fff;filter:blur(9px);opacity:.85
 }
-button.secondary{background:transparent;color:#00eaff;border:1px solid #087c94}
-button:disabled{opacity:.5}
-.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.small{font-size:11px;opacity:.65;line-height:1.6}
-footer{padding:16px;font-size:10px;opacity:.4;text-align:center}
-@media(max-width:420px){
- .row{gap:6px}
- button{padding:11px 12px}
- .orb-area{height:190px;width:190px}
- .ring{width:150px;height:150px}
+.orb-label{position:relative;z-index:1;color:var(--cyan);letter-spacing:5px;font-size:13px;margin-top:3px}
+.orb-status{position:relative;z-index:1;font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:9px}
+.equalizer{height:22px;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:13px}
+.equalizer i{display:block;width:3px;height:7px;border-radius:3px;background:var(--cyan);animation:wave 1s ease-in-out infinite alternate}
+.equalizer i:nth-child(2n){animation-delay:.2s}
+.equalizer i:nth-child(3n){animation-delay:.5s}
+.equalizer.paused i{animation-play-state:paused;height:3px}
+.command-row{display:flex;gap:8px;max-width:510px;margin:12px auto 0;position:relative;z-index:1}
+.command-row input{
+  flex:1;min-width:0;background:#030c19;border:1px solid #23506c;
+  border-radius:8px;color:var(--text);padding:12px;font-size:12px
 }
-@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+.btn{
+  border:0;border-radius:7px;padding:11px 14px;
+  color:#02111b;background:linear-gradient(135deg,#65f0ff,#55aaff);
+  font-size:11px;font-weight:bold
+}
+.btn:hover{filter:brightness(1.12)}
+.btn-secondary{
+  color:var(--cyan);background:#0b2036;border:1px solid #24516d;
+  border-radius:7px;padding:10px 12px;font-size:11px
+}
+.response{
+  position:relative;z-index:1;max-width:510px;margin:10px auto 0;
+  text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;
+  color:#b5d8ee;font-size:11px;line-height:1.8
+}
+.response:empty{display:none}
+.right-stack{display:grid;grid-template-rows:auto auto;gap:15px;min-width:0}
+.agent-list{display:flex;flex-direction:column;gap:9px}
+.agent{
+  display:flex;align-items:center;gap:10px;padding:10px;
+  background:#061425;border:1px solid #153b54;border-radius:9px
+}
+.agent-icon{
+  width:34px;height:34px;flex-shrink:0;display:grid;place-items:center;
+  color:var(--cyan);background:#10304a;border-radius:8px;font-size:17px
+}
+.agent-info{flex:1;min-width:0}
+.agent-info strong{font-size:11px;display:block;font-weight:600}
+.agent-info small{display:block;color:var(--muted);font-size:9px;margin-top:5px}
+.state{font-size:9px;color:#ffd78a;white-space:nowrap}
+.state.ready{color:var(--green)}
+.quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.quick{
+  min-width:0;text-align:left;background:#061425;border:1px solid #1b4057;
+  border-radius:9px;color:var(--text);padding:12px
+}
+.quick:hover{border-color:var(--cyan);background:#0b2036}
+.quick-icon{font-size:19px;color:var(--cyan);margin-bottom:9px}
+.quick strong{font-size:11px;display:block}
+.quick small{font-size:9px;line-height:1.6;color:var(--muted);display:block;margin-top:6px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:15px}
+.metric{padding:15px}
+.metric-label{font-size:10px;color:var(--muted)}
+.metric-value{font-size:24px;font-weight:bold;margin:12px 0 7px;letter-spacing:.2px}
+.metric-note{font-size:9px;color:var(--muted)}
+.cyan{color:var(--cyan)}.green{color:var(--green)}.amber{color:#ffd78a}
+.lower{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px}
+.activity{display:flex;flex-direction:column}
+.activity-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #153149;font-size:10px;line-height:1.7}
+.activity-item:last-child{border:0}
+.activity-dot{width:6px;height:6px;background:var(--cyan);border-radius:50%;margin-top:6px;flex-shrink:0;box-shadow:0 0 7px #42eaff}
+.activity-copy{color:#b7d0e3;overflow-wrap:anywhere}
+.activity-time{display:block;color:var(--muted);font-size:9px;margin-top:3px}
+.page{min-width:0}
+.page.hidden{display:none}
+.form-panel{margin-top:15px}
+.field{margin:13px 0}
+.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:7px}
+.field input,.field textarea,.field select{
+  width:100%;background:#030d1a;border:1px solid #21465f;
+  border-radius:8px;padding:12px;color:var(--text)
+}
+.field textarea{min-height:115px;resize:vertical;line-height:1.7}
+.output{
+  background:#030c18;border:1px solid #173d55;border-radius:8px;
+  padding:13px;min-height:100px;white-space:pre-wrap;overflow-wrap:anywhere;
+  font-size:11px;line-height:1.9;color:#c5e4f5
+}
+.output-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.footer{text-align:center;color:#55758f;font-size:9px;letter-spacing:2px;padding:25px 10px 10px}
+@keyframes rotate{to{transform:rotate(360deg)}}
+@keyframes rotate-reverse{to{transform:rotateX(68deg) rotate(-385deg)}}
+@keyframes orb-pulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.035);filter:brightness(1.2)}}
+@keyframes wave{from{height:4px;opacity:.5}to{height:20px;opacity:1}}
+@media(max-width:1000px){
+ .dashboard{grid-template-columns:minmax(0,1fr) minmax(250px,.8fr)}
+ .orb-wrap{width:220px;height:220px}.orb{width:120px;height:120px}
+ .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ .topbar{padding:12px 13px}.brand h1{font-size:15px;letter-spacing:3px}
+ .brand small{font-size:8px;letter-spacing:1px}.logo{width:36px;height:36px}
+ .clock{display:none}.online{font-size:9px;padding:7px}
+ .shell{padding:15px 11px 25px}
+ .heading{align-items:flex-start;flex-direction:column;gap:8px}
+ h2{font-size:22px}.sub{font-size:11px}
+ .dashboard{grid-template-columns:1fr;gap:12px}
+ .core-panel{min-height:0;padding:14px 10px 18px}
+ .core-stage{min-height:250px}
+ .orb-wrap{width:220px;height:220px}.orb{width:120px;height:120px}
+ .right-stack{gap:12px}
+ .metrics{gap:9px;margin-top:12px}
+ .metric{padding:12px}.metric-value{font-size:22px}
+ .lower{grid-template-columns:1fr;gap:12px;margin-top:12px}
+ .panel{padding:13px}
+ .command-row{padding:0 5px}.command-row input{font-size:11px;padding:11px}
+ .command-row .btn{padding:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
 <body>
-<header>
- <h1>J.A.R.V.I.S.</h1>
- <div class="subtitle">PERSONAL AI ASSISTANT</div>
- <label for="api-key">Claude APIキー（利用時に入力）</label>
- <input id="api-key" type="password" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
- <p class="note">キーはこのページのコードには保存しません。共有端末では使用せず、利用後は入力欄を消してください。API利用料が発生します。</p>
+<header class="topbar">
+ <div class="brand">
+  <div class="logo">◈</div>
+  <div><h1>J.A.R.V.I.S.</h1><small>PERSONAL AI COMMAND CENTER</small></div>
+ </div>
+ <div class="top-right">
+  <div class="clock" id="clock">--:--:--</div>
+  <div class="online"><i></i>INTERFACE ONLINE</div>
+ </div>
 </header>
 
-<div class="orb-area" id="orb" aria-label="音声入力">
- <div class="ring"></div><div class="orb"></div>
+<div class="shell">
+ <section id="dashboard" class="page">
+  <div class="heading">
+   <div>
+    <div class="kicker">SYSTEM OVERVIEW / 001</div>
+    <h2>AI COMMAND CENTER</h2>
+    <div class="sub">アフィリエイト収益化プロジェクト — 司令室</div>
+   </div>
+   <div class="demo">デモ画面・実績データ未接続</div>
+  </div>
+
+  <div class="dashboard">
+   <div class="panel core-panel">
+    <div class="panel-title"><h3>J.A.R.V.I.S. CORE</h3><span>MAIN INTERFACE</span></div>
+    <div class="core-stage">
+     <div class="orb-wrap">
+      <div class="orb-halo"></div>
+      <div class="orb-ring"></div>
+      <div class="orb-ring-two"></div>
+      <div class="orb-ring-three"></div>
+      <div class="orb"></div>
+     </div>
+    </div>
+    <div class="orb-label">J.A.R.V.I.S.</div>
+    <div class="orb-status" id="orb-status">SYSTEM STANDBY · 待機中</div>
+    <div class="equalizer" id="equalizer">
+     <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="command-row">
+     <input id="command" placeholder="司令室への指示を入力..." aria-label="司令室への指示">
+     <button class="btn" id="send-command">送信</button>
+    </div>
+    <div class="response" id="response" aria-live="polite"></div>
+   </div>
+
+   <div class="right-stack">
+    <div class="panel">
+     <div class="panel-title"><h3>AI AGENTS</h3><span>AGENT STATUS</span></div>
+     <div class="agent-list">
+      <div class="agent"><div class="agent-icon">⌕</div><div class="agent-info"><strong>リサーチエージェント</strong><small>商品候補・市場調査</small></div><span class="state">待機中</span></div>
+      <div class="agent"><div class="agent-icon">✎</div><div class="agent-info"><strong>コンテンツエージェント</strong><small>動画台本・記事制作</small></div><span class="state">待機中</span></div>
+      <div class="agent"><div class="agent-icon">▷</div><div class="agent-info"><strong>投稿エージェント</strong><small>SNS投稿・予約管理</small></div><span class="state">未接続</span></div>
+      <div class="agent"><div class="agent-icon">▥</div><div class="agent-info"><strong>アナリティクス</strong><small>クリック・成果・報酬分析</small></div><span class="state">未接続</span></div>
+     </div>
+    </div>
+    <div class="panel">
+     <div class="panel-title"><h3>QUICK OPERATIONS</h3><span>COMMANDS</span></div>
+     <div class="quick-grid">
+      <button class="quick" data-page="research"><div class="quick-icon">⌕</div><strong>商品リサーチ</strong><small>紹介商品を調べる準備</small></button>
+      <button class="quick" data-page="content"><div class="quick-icon">✎</div><strong>動画・記事制作</strong><small>コンテンツの企画と下書き</small></button>
+      <button class="quick" data-page="analytics"><div class="quick-icon">▥</div><strong>収益分析</strong><small>報酬・成果を管理</small></button>
+      <button class="quick" data-page="settings"><div class="quick-icon">⚙</div><strong>システム設定</strong><small>目標と運用方針を設定</small></button>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <div class="metrics">
+   <div class="panel metric"><div class="metric-label">MONTHLY REWARD</div><div class="metric-value cyan" id="metric-reward">¥0</div><div class="metric-note">今月の報酬・手入力値</div></div>
+   <div class="panel metric"><div class="metric-label">LINK CLICKS</div><div class="metric-value" id="metric-clicks">0</div><div class="metric-note">今月のクリック数</div></div>
+   <div class="panel metric"><div class="metric-label">CONVERSIONS</div><div class="metric-value green" id="metric-sales">0</div><div class="metric-note">今月の成果件数</div></div>
+   <div class="panel metric"><div class="metric-label">MONTHLY GOAL</div><div class="metric-value amber" id="metric-goal">¥10,000</div><div class="metric-note" id="metric-progress">目標達成率 0%</div></div>
+  </div>
+
+  <div class="lower">
+   <div class="panel">
+    <div class="panel-title"><h3>SYSTEM ACTIVITY</h3><span>LOCAL LOG</span></div>
+    <div class="activity" id="activity">
+     <div class="activity-item"><span class="activity-dot"></span><div class="activity-copy">J.A.R.V.I.S.の司令室を起動しました。<span class="activity-time">起動時</span></div></div>
+    </div>
+   </div>
+   <div class="panel">
+    <div class="panel-title"><h3>MISSION STATUS</h3><span>PROJECT PLAN</span></div>
+    <div class="agent-list">
+     <div class="agent"><div class="agent-icon">01</div><div class="agent-info"><strong>商品・案件リサーチ</strong><small>公式条件を調べて候補を絞る</small></div><span class="state">準備</span></div>
+     <div class="agent"><div class="agent-icon">02</div><div class="agent-info"><strong>コンテンツ制作</strong><small>ショート動画・note記事</small></div><span class="state">準備</span></div>
+     <div class="agent"><div class="agent-icon">03</div><div class="agent-info"><strong>投稿・成果分析</strong><small>API連携と自動化を構築</small></div><span class="state">未接続</span></div>
+    </div>
+   </div>
+  </div>
+ </section>
+
+ <section id="research" class="page hidden">
+  <div class="heading"><div><div class="kicker">MARKET INTELLIGENCE / 002</div><h2>商品リサーチ</h2><div class="sub">紹介する商品やサービスの調査依頼文を作成します。</div></div></div>
+  <div class="panel form-panel">
+   <div class="field"><label for="genre">調査ジャンル</label><input id="genre" placeholder="例：AIツール、副業サービス、便利なアプリ"></div>
+   <div class="field"><label for="audience">想定する読者・視聴者</label><input id="audience" placeholder="例：副業を始めたい会社員"></div>
+   <div class="field"><label for="criteria">調査条件</label><textarea id="criteria" placeholder="例：無料で始められる、公式アフィリエイト制度がある、初心者向け"></textarea></div>
+   <button class="btn" id="make-research">調査依頼文を作成</button>
+  </div>
+  <div class="panel form-panel">
+   <div class="output-actions"><div class="panel-title" style="margin:0"><h3>RESEARCH BRIEF</h3></div><button class="btn-secondary" data-copy="research-output">コピー</button></div>
+   <div class="output" id="research-output">調査依頼文がここに表示されます。</div>
+  </div>
+  <button class="btn-secondary back" data-page="dashboard" style="margin-top:13px">← 司令室に戻る</button>
+ </section>
+
+ <section id="content" class="page hidden">
+  <div class="heading"><div><div class="kicker">CONTENT STUDIO / 003</div><h2>コンテンツ制作</h2><div class="sub">動画や記事の制作指示をまとめます。</div></div></div>
+  <div class="panel form-panel">
+   <div class="field"><label for="platform">制作媒体</label><select id="platform"><option>YouTubeショート</option><option>Instagramリール</option><option>note記事</option><option>YouTube動画</option></select></div>
+   <div class="field"><label for="topic">テーマ・商品</label><input id="topic" placeholder="例：副業初心者におすすめのAIツール3選"></div>
+   <div class="field"><label for="tone">希望する内容</label><textarea id="tone" placeholder="例：冒頭で興味を引く。具体例、メリット、注意点を説明する。"></textarea></div>
+   <button class="btn" id="make-content">制作指示を作成</button>
+  </div>
+  <div class="panel form-panel">
+   <div class="output-actions"><div class="panel-title" style="margin:0"><h3>CONTENT BRIEF</h3></div><button class="btn-secondary" data-copy="content-output">コピー</button></div>
+   <div class="output" id="content-output">制作指示がここに表示されます。</div>
+  </div>
+  <button class="btn-secondary back" data-page="dashboard" style="margin-top:13px">← 司令室に戻る</button>
+ </section>
+
+ <section id="analytics" class="page hidden">
+  <div class="heading"><div><div class="kicker">PERFORMANCE / 004</div><h2>収益分析</h2><div class="sub">実績を入力して目標達成率などを計算します。</div></div></div>
+  <div class="panel form-panel">
+   <div class="field"><label for="goal-input">月間報酬目標（円）</label><input id="goal-input" type="number" min="0" value="10000"></div>
+   <div class="field"><label for="reward-input">今月の報酬（円）</label><input id="reward-input" type="number" min="0" value="0"></div>
+   <div class="field"><label for="click-input">今月のクリック数</label><input id="click-input" type="number" min="0" value="0"></div>
+   <div class="field"><label for="sales-input">今月の成果件数</label><input id="sales-input" type="number" min="0" value="0"></div>
+   <button class="btn" id="save-metrics">集計を更新</button>
+  </div>
+  <div class="panel form-panel"><div class="panel-title"><h3>PERFORMANCE REPORT</h3></div><div class="output" id="analysis-output">数値を入力して集計を更新してください。</div></div>
+  <button class="btn-secondary back" data-page="dashboard" style="margin-top:13px">← 司令室に戻る</button>
+ </section>
+
+ <section id="settings" class="page hidden">
+  <div class="heading"><div><div class="kicker">CONFIGURATION / 005</div><h2>システム設定</h2><div class="sub">運用目標と基本方針を設定します。</div></div></div>
+  <div class="panel form-panel">
+   <div class="field"><label for="settings-goal">月間報酬目標（円）</label><input id="settings-goal" type="number" min="0" value="10000"></div>
+   <div class="field"><label for="settings-niche">メインジャンル</label><input id="settings-niche" value="AI・副業・お金"></div>
+   <div class="field"><label for="settings-budget">予算方針</label><select id="settings-budget"><option>無料優先</option><option>必要なツールには課金</option></select></div>
+   <button class="btn" id="save-settings">設定を反映</button>
+  </div>
+  <div class="panel form-panel">
+   <div class="panel-title"><h3>CONNECTION STATUS</h3></div>
+   <div class="agent-list">
+    <div class="agent"><div class="agent-icon">◈</div><div class="agent-info"><strong>司令室インターフェース</strong><small>画面・操作パネル</small></div><span class="state ready">稼働中</span></div>
+    <div class="agent"><div class="agent-icon">✧</div><div class="agent-info"><strong>Claude API</strong><small>安全なバックエンドは未接続</small></div><span class="state">未接続</span></div>
+    <div class="agent"><div class="agent-icon">▷</div><div class="agent-info"><strong>SNS投稿API</strong><small>投稿アカウント連携は未設定</small></div><span class="state">未接続</span></div>
+    <div class="agent"><div class="agent-icon">▥</div><div class="agent-info"><strong>アフィリエイト実績</strong><small>報酬データ自動取得は未設定</small></div><span class="state">未接続</span></div>
+   </div>
+   <p class="sub">APIキーはこの画面に入力しないでください。公開ページのHTMLにAPIキーを保存すると、第三者に見られるおそれがあります。</p>
+  </div>
+  <button class="btn-secondary back" data-page="dashboard" style="margin-top:13px">← 司令室に戻る</button>
+ </section>
+ <footer class="footer">J.A.R.V.I.S. · PERSONAL AI COMMAND CENTER</footer>
 </div>
-
-<main>
- <div id="status" role="status" aria-live="polite">準備完了です。ご指示をどうぞ。</div>
-
- <label for="user-input">メッセージ</label>
- <div class="row">
-  <input id="user-input" placeholder="J.A.R.V.I.S.に話しかける..." autocomplete="off">
-  <button id="send">送信</button>
- </div>
-
- <div class="controls">
-  <button class="secondary" id="voice">🎙 音声入力</button>
-  <button class="secondary" id="stop">読み上げ停止</button>
-  <button class="secondary" id="reset">会話リセット</button>
-  <button class="secondary" id="clear-key">キーを消す</button>
- </div>
- <p class="small">音声入力はブラウザーによって利用できない場合があります。APIキーをこのページのソースコードやGitHubに書き込まないでください。</p>
-</main>
-<footer>J.A.R.V.I.S. · PERSONAL AI SYSTEM</footer>
 
 <script>
 "use strict";
+const $=id=>document.getElementById(id);
+const pages=[...document.querySelectorAll(".page")];
+const navButtons=[...document.querySelectorAll("[data-page]")];
 
-const MODEL = "claude-sonnet-4-6";
-const SYSTEM_PROMPT = `
-あなたはJ.A.R.V.I.S.という日本語AIアシスタントです。
-冷静でスマートな執事のように、丁寧でわかりやすく回答してください。
-ユーザーの希望を尊重し、初心者には操作を一つずつ案内してください。
-不確かな情報を事実として断言せず、できないことは明確に説明してください。
-`;
-
-const $ = id => document.getElementById(id);
-const keyInput = $("api-key");
-const input = $("user-input");
-const status = $("status");
-const orb = $("orb");
-const sendButton = $("send");
-let conversation = [];
-let busy = false;
-let recognition = null;
-let listening = false;
-
-function show(text) {
- status.textContent = text;
+function log(message){
+ const item=document.createElement("div");
+ item.className="activity-item";
+ const dot=document.createElement("span");dot.className="activity-dot";
+ const copy=document.createElement("div");copy.className="activity-copy";
+ copy.appendChild(document.createTextNode(message));
+ const time=document.createElement("span");time.className="activity-time";
+ time.textContent=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+ copy.appendChild(time);item.append(dot,copy);$("activity").prepend(item);
+ while($("activity").children.length>6)$("activity").lastElementChild.remove();
 }
-
-function speak(text) {
- if (!("speechSynthesis" in window)) return;
- speechSynthesis.cancel();
- const u = new SpeechSynthesisUtterance(text);
- u.lang = "ja-JP";
- speechSynthesis.speak(u);
+function showPage(id){
+ pages.forEach(p=>p.classList.toggle("hidden",p.id!==id));
+ window.scrollTo({top:0,behavior:"smooth"});
+ if(id!=="dashboard")log(({research:"商品リサーチ画面を開きました",content:"コンテンツ制作画面を開きました",analytics:"収益分析画面を開きました",settings:"システム設定画面を開きました"})[id]||"司令室を表示しました");
 }
+navButtons.forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
 
-function stopSpeaking() {
- if ("speechSynthesis" in window) speechSynthesis.cancel();
+function makeResearch(){
+ const genre=$("genre").value.trim()||"AI・副業・お金";
+ const audience=$("audience").value.trim()||"副業初心者";
+ const criteria=$("criteria").value.trim()||"無料で始められること、公式紹介制度があること";
+ $("research-output").textContent=
+`あなたはアフィリエイト商品リサーチ担当です。
+
+【ジャンル】${genre}
+【対象読者】${audience}
+【調査条件】${criteria}
+
+以下を調査してください。
+1. 実在する商品・サービス候補
+2. 公式サイトと公式アフィリエイト制度
+3. 報酬条件、成果承認条件、利用料金
+4. メリット、デメリット、利用時の注意点
+5. YouTubeショートやnote向けの企画案
+6. 根拠となる公式情報のリンク
+7. 競合との差別化ポイント
+
+報酬額や条件を推測で断定せず、確認できない情報は「要確認」としてください。広告であることの明示も考慮してください。`;
+ log("商品リサーチの依頼文を作成しました");
 }
+$("make-research").addEventListener("click",makeResearch);
 
-async function sendMessage() {
- if (busy) return;
- const key = keyInput.value.trim();
- const message = input.value.trim();
+function makeContent(){
+ const platform=$("platform").value;
+ const topic=$("topic").value.trim()||"AI・副業の初心者向けテーマ";
+ const tone=$("tone").value.trim()||"具体例、メリット、デメリット、注意点を公平に説明する";
+ $("content-output").textContent=
+`あなたはアフィリエイトコンテンツ制作担当です。
 
- if (!key) {
-  show("先にClaude APIキーを入力してください。");
-  keyInput.focus();
-  return;
- }
- if (!message) return;
+【媒体】${platform}
+【テーマ】${topic}
+【希望】${tone}
 
- busy = true;
- sendButton.disabled = true;
- input.disabled = true;
- sendButton.textContent = "処理中...";
- input.value = "";
- stopSpeaking();
- show("思考中です...");
+以下を作成してください。
+1. タイトル案を3つ
+2. 想定視聴者・読者の悩み
+3. 冒頭のフック
+4. 本編の台本または記事構成
+5. 具体例、メリット、デメリット
+6. 自然な行動喚起（CTA）
+7. 事実確認が必要な箇所と公式情報
+8. 投稿文と関連ハッシュタグ
 
- const userMessage = {role:"user", content:message};
+未確認の体験談や収益実績を捏造しないでください。広告・アフィリエイトであることを適切に明示し、誇大な収益保証を避けてください。`;
+ log("コンテンツ制作の指示文を作成しました");
+}
+$("make-content").addEventListener("click",makeContent);
 
- try {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-   method:"POST",
-   headers:{
-    "content-type":"application/json",
-    "x-api-key":key,
-    "anthropic-version":"2023-06-01",
-    "anthropic-dangerous-direct-browser-access":"true"
-   },
-   body:JSON.stringify({
-    model:MODEL,
-    max_tokens:1200,
-    system:SYSTEM_PROMPT,
-    messages:[...conversation,userMessage]
-   })
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-   const message = data?.error?.message || "詳細不明のエラー";
-   if (response.status === 401) throw new Error("APIキーが正しいか確認してください。");
-   if (response.status === 403) throw new Error("APIの利用権限を確認してください。");
-   if (response.status === 404) throw new Error("モデルが利用できないようです。モデルIDを確認してください。");
-   if (response.status === 429) throw new Error("APIの利用上限またはレート制限に達しました。");
-   throw new Error("APIエラー (" + response.status + "): " + message);
+document.querySelectorAll("[data-copy]").forEach(button=>{
+ button.addEventListener("click",async()=>{
+  const text=$(button.dataset.copy).textContent;
+  try{await navigator.clipboard.writeText(text);log("テキストをコピーしました");}
+  catch{
+   const area=document.createElement("textarea");area.value=text;
+   document.body.appendChild(area);area.select();
+   let ok=false;try{ok=document.execCommand("copy")}catch{}
+   area.remove();log(ok?"テキストをコピーしました":"コピーできません。テキストを選択してコピーしてください");
   }
+ });
+});
 
-  const reply = (data.content || [])
-   .filter(item => item.type === "text")
-   .map(item => item.text)
-   .join("\n").trim();
+function refreshMetrics(){
+ const goal=Math.max(0,Number($("goal-input").value)||0);
+ const reward=Math.max(0,Number($("reward-input").value)||0);
+ const clicks=Math.max(0,Number($("click-input").value)||0);
+ const sales=Math.max(0,Number($("sales-input").value)||0);
+ const progress=goal>0?reward/goal*100:0;
+ $("metric-goal").textContent="¥"+goal.toLocaleString("ja-JP");
+ $("metric-reward").textContent="¥"+reward.toLocaleString("ja-JP");
+ $("metric-clicks").textContent=clicks.toLocaleString("ja-JP");
+ $("metric-sales").textContent=sales.toLocaleString("ja-JP");
+ $("metric-progress").textContent="目標達成率 "+progress.toFixed(1)+"%";
+ $("analysis-output").textContent=
+`月間目標：¥${goal.toLocaleString("ja-JP")}
+今月の報酬：¥${reward.toLocaleString("ja-JP")}
+目標達成率：${progress.toFixed(1)}%
+目標まで：¥${Math.max(0,goal-reward).toLocaleString("ja-JP")}
+クリック数：${clicks.toLocaleString("ja-JP")}
+成果件数：${sales.toLocaleString("ja-JP")}
+クリックからの成果率：${clicks>0?(sales/clicks*100).toFixed(2)+"%":"算出不可"}
 
-  if (!reply) throw new Error("AIから回答が返りませんでした。");
-
-  conversation.push(userMessage, {role:"assistant",content:reply});
-  if (conversation.length > 20) conversation = conversation.slice(-20);
-
-  show(reply);
-  speak(reply);
-
- } catch (error) {
-  show("エラー: " + (error.message || "通信に失敗しました。"));
- } finally {
-  busy = false;
-  sendButton.disabled = false;
-  input.disabled = false;
-  sendButton.textContent = "送信";
-  input.focus();
- }
+※入力値から計算した数値です。外部サービスからの自動取得ではありません。`;
+ log("収益分析を更新しました");
 }
+$("save-metrics").addEventListener("click",refreshMetrics);
 
-sendButton.addEventListener("click", sendMessage);
-input.addEventListener("keydown", e => {
- if (e.key === "Enter" && !e.isComposing) {
-  e.preventDefault();
-  sendMessage();
- }
+$("save-settings").addEventListener("click",()=>{
+ const goal=Math.max(0,Number($("settings-goal").value)||0);
+ $("goal-input").value=goal;$("metric-goal").textContent="¥"+goal.toLocaleString("ja-JP");
+ log("設定を画面に反映しました。別端末との同期は未対応です");
+ $("response").textContent="設定を反映しました。ジャンル："+($("settings-niche").value.trim()||"未設定")+"／予算："+$("settings-budget").value;
+ showPage("dashboard");
 });
 
-$("stop").addEventListener("click", stopSpeaking);
-$("reset").addEventListener("click", () => {
- conversation = [];
- stopSpeaking();
- show("会話履歴をリセットしました。");
-});
-$("clear-key").addEventListener("click", () => {
- keyInput.value = "";
- show("APIキー入力欄を消去しました。");
-});
+function sendCommand(){
+ const command=$("command").value.trim();
+ if(!command)return;
+ $("orb-status").textContent="COMMAND RECEIVED · 指示を受信";
+ $("equalizer").classList.add("paused");
+ $("response").textContent=
+`指示を受け付けました：
+「${command}」
 
-const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+現在は司令室の画面部分が稼働しています。Claude APIとの安全な接続はまだ設定されていないため、この画面だけではAIへの実行依頼は送信されていません。
 
-if (SpeechAPI) {
- recognition = new SpeechAPI();
- recognition.lang = "ja-JP";
- recognition.interimResults = false;
- recognition.continuous = false;
-
- recognition.onstart = () => {
-  listening = true;
-  orb.classList.add("listening");
-  show("聴取中です。どうぞお話しください。");
- };
- recognition.onresult = e => {
-  input.value = e.results[0][0].transcript;
-  sendMessage();
- };
- recognition.onerror = e => {
-  if (e.error !== "no-speech") show("音声入力エラー: " + e.error);
- };
- recognition.onend = () => {
-  listening = false;
-  orb.classList.remove("listening");
- };
+下の操作パネルから商品リサーチやコンテンツ制作の依頼文を作成できます。`;
+ log("司令室に指示を入力しました");
+ $("command").value="";
+ setTimeout(()=>{$("orb-status").textContent="SYSTEM STANDBY · 待機中";$("equalizer").classList.remove("paused")},3500);
 }
+$("send-command").addEventListener("click",sendCommand);
+$("command").addEventListener("keydown",e=>{if(e.key==="Enter")sendCommand()});
 
-function startVoice() {
- if (!recognition) {
-  show("このブラウザーは音声入力に対応していません。テキスト入力をご利用ください。");
-  return;
- }
- if (listening) recognition.stop();
- else {
-  try { recognition.start(); }
-  catch { show("音声入力を開始できません。少し待って再度お試しください。"); }
- }
+function updateClock(){
+ $("clock").textContent=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
 }
-
-$("voice").addEventListener("click", startVoice);
-orb.addEventListener("click", startVoice);
-orb.setAttribute("role","button");
-orb.setAttribute("tabindex","0");
-orb.addEventListener("keydown", e => {
- if (e.key === "Enter" || e.key === " ") {
-  e.preventDefault();
-  startVoice();
- }
-});
+updateClock();setInterval(updateClock,1000);
+log("J.A.R.V.I.S.司令室を起動しました");
 </script>
 </body>
 </html>
