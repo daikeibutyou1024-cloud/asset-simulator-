@@ -166,6 +166,17 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
   font-size:11px;font-weight:bold
 }
 .btn:hover{filter:brightness(1.12)}
+.voice-btn{
+  width:44px;flex-shrink:0;color:var(--cyan);background:#0b2036;
+  border:1px solid #24516d;border-radius:7px;padding:10px 8px;
+  font-size:17px;line-height:1
+}
+.voice-btn:hover{border-color:var(--cyan);background:#10304a}
+.voice-btn.listening{
+  color:#fff;background:#9b2638;border-color:#ff7187;
+  box-shadow:0 0 15px #ff365866;animation:mic-pulse 1s ease-in-out infinite
+}
+@keyframes mic-pulse{50%{box-shadow:0 0 22px #ff3658aa}}
 .btn-secondary{
   color:var(--cyan);background:#0b2036;border:1px solid #24516d;
   border-radius:7px;padding:10px 12px;font-size:11px
@@ -305,6 +316,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
     </div>
     <div class="command-row">
      <input id="command" placeholder="司令室への指示を入力..." aria-label="司令室への指示">
+     <button class="voice-btn" id="voice-command" type="button" aria-label="音声入力" title="音声入力">🎤</button>
      <button class="btn" id="send-command">送信</button>
     </div>
     <div class="response" id="response" aria-live="polite"></div>
@@ -544,6 +556,65 @@ $("save-settings").addEventListener("click",()=>{
  showPage("dashboard");
 });
 
+let recognition=null;
+let isListening=false;
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+function setListening(active){
+ isListening=active;
+ $("voice-command").classList.toggle("listening",active);
+ $("voice-command").textContent=active?"■":"🎤";
+ $("voice-command").title=active?"音声入力を停止":"音声入力";
+ if(active){
+  $("orb-status").textContent="LISTENING · お話しください";
+  $("equalizer").classList.remove("paused");
+ }else if($("orb-status").textContent.startsWith("LISTENING")){
+  $("orb-status").textContent="SYSTEM STANDBY · 待機中";
+  $("equalizer").classList.add("paused");
+ }
+}
+function startVoiceInput(){
+ if(!SpeechRecognition){
+  $("response").textContent="このブラウザは音声認識に対応していません。Google Chromeでお試しください。";
+  log("音声認識に非対応のブラウザです");
+  return;
+ }
+ if(!recognition){
+  recognition=new SpeechRecognition();
+  recognition.lang="ja-JP";
+  recognition.continuous=false;
+  recognition.interimResults=false;
+  recognition.onresult=event=>{
+   const spoken=event.results[0][0].transcript;
+   $("command").value=spoken;
+   log("音声を認識しました："+spoken);
+   setListening(false);
+   sendCommand();
+  };
+  recognition.onerror=event=>{
+   setListening(false);
+   const message=event.error==="not-allowed"?"マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください。":"音声を認識できませんでした。もう一度お試しください。";
+   $("response").textContent=message;
+   log("音声認識エラー："+event.error);
+  };
+  recognition.onend=()=>setListening(false);
+ }
+ try{recognition.start();setListening(true);}
+ catch(error){setListening(false);$("response").textContent="マイクを開始できませんでした。少し待ってから再度お試しください。";}
+}
+$("voice-command").addEventListener("click",()=>{
+ if(isListening){try{recognition.stop()}catch{};setListening(false);}
+ else startVoiceInput();
+});
+function speakAnswer(text){
+ if(!("speechSynthesis" in window))return;
+ window.speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(text);
+ utterance.lang="ja-JP";
+ utterance.rate=1;
+ utterance.pitch=1;
+ window.speechSynthesis.speak(utterance);
+}
+
 async function sendCommand(){
  const command=$("command").value.trim();
  if(!command)return;
@@ -570,6 +641,7 @@ async function sendCommand(){
   }
   if(!response.ok)throw new Error(result.detail||result.error||"Claudeとの通信に失敗しました");
   $("response").textContent=result.answer||"回答を取得できませんでした。";
+  if(result.answer)speakAnswer(result.answer);
   $("orb-status").textContent="AI RESPONSE RECEIVED · 回答完了";
   log("Claudeから回答を受信しました");
   $("command").value="";
