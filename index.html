@@ -98,9 +98,11 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
   min-height:285px;overflow:hidden
 }
 .orb-wrap{
-  width:250px;height:250px;position:relative;
+  width:250px;height:250px;position:relative;cursor:pointer;
   display:grid;place-items:center;flex-shrink:0
 }
+.orb-wrap:focus-visible{outline:2px solid #50e8ff;outline-offset:8px;border-radius:50%}
+.orb-wrap.listening .orb{filter:brightness(1.35);box-shadow:0 0 45px #20dfff9c, inset 0 0 28px #20dfff55}
 .orb-halo{
   position:absolute;inset:0;border-radius:50%;
   background:radial-gradient(circle,#1ac9ff17 0%,transparent 67%);
@@ -301,7 +303,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
    <div class="panel core-panel">
     <div class="panel-title"><h3>J.A.R.V.I.S. CORE</h3><span>MAIN INTERFACE</span></div>
     <div class="core-stage">
-     <div class="orb-wrap">
+     <div class="orb-wrap" id="orb-voice" role="button" tabindex="0" aria-label="球体を押して音声入力" aria-pressed="false" title="球体を押して音声入力">
       <div class="orb-halo"></div>
       <div class="orb-ring"></div>
       <div class="orb-ring-two"></div>
@@ -316,7 +318,6 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
     </div>
     <div class="command-row">
      <input id="command" placeholder="司令室への指示を入力..." aria-label="司令室への指示">
-     <button class="voice-btn" id="voice-command" type="button" aria-label="音声入力" title="音声入力">🎤</button>
      <button class="btn" id="send-command">送信</button>
     </div>
     <div class="response" id="response" aria-live="polite"></div>
@@ -561,9 +562,9 @@ let isListening=false;
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 function setListening(active){
  isListening=active;
- $("voice-command").classList.toggle("listening",active);
- $("voice-command").textContent=active?"■":"🎤";
- $("voice-command").title=active?"音声入力を停止":"音声入力";
+ $("orb-voice").classList.toggle("listening",active);
+ $("orb-voice").setAttribute("aria-pressed",String(active));
+ $("orb-voice").title=active?"球体を押して音声入力を停止":"球体を押して音声入力";
  if(active){
   $("orb-status").textContent="LISTENING · お話しください";
   $("equalizer").classList.remove("paused");
@@ -601,9 +602,16 @@ function startVoiceInput(){
  try{recognition.start();setListening(true);}
  catch(error){setListening(false);$("response").textContent="マイクを開始できませんでした。少し待ってから再度お試しください。";}
 }
-$("voice-command").addEventListener("click",()=>{
+$("orb-voice").addEventListener("click",()=>{
  if(isListening){try{recognition.stop()}catch{};setListening(false);}
  else startVoiceInput();
+});
+$("orb-voice").addEventListener("keydown",event=>{
+ if(event.key==="Enter"||event.key===" "){
+  event.preventDefault();
+  if(isListening){try{recognition.stop()}catch{};setListening(false);}
+  else startVoiceInput();
+ }
 });
 function speakAnswer(text){
  if(!("speechSynthesis" in window))return;
