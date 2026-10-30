@@ -607,8 +607,17 @@ $("voice-command").addEventListener("click",()=>{
 });
 function speakAnswer(text){
  if(!("speechSynthesis" in window))return;
+ // 読み上げ用に絵文字・装飾記号・Markdown記法・URLを取り除く
+ const speechText=String(text)
+  .replace(/https?:\\/\\/\\S+/gu,"")
+  .replace(/[`*_#~>|\\[\\]{}]/gu,"")
+  .replace(/[\\p{Extended_Pictographic}\\p{S}\\uFE0F\\u200D]/gu,"")
+  .replace(/[\\t ]+/gu," ")
+  .replace(/\\n{2,}/gu,"。")
+  .trim();
+ if(!speechText)return;
  window.speechSynthesis.cancel();
- const utterance=new SpeechSynthesisUtterance(text);
+ const utterance=new SpeechSynthesisUtterance(speechText);
  utterance.lang="ja-JP";
  utterance.rate=1;
  utterance.pitch=1;
