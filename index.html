@@ -275,6 +275,23 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{animation:none!important;scroll-behavior:auto!important}
 }
+
+/* AI社員プロフィール */
+.agent-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.staff-card{overflow:hidden;border:1px solid #24516d;border-radius:12px;background:linear-gradient(155deg,#0b2036,#06101f);min-width:0}
+.staff-portrait{height:142px;position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 75%,#225078 0%,#10253d 48%,#071323 100%)}
+.staff-portrait:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#06101f 100%)}
+.staff-portrait svg{height:158px;width:100%;max-width:170px;position:relative;z-index:1;filter:drop-shadow(0 7px 12px #0009)}
+.staff-tag{position:absolute;z-index:2;top:9px;left:9px;padding:4px 7px;border:1px solid #7bdfff55;border-radius:20px;background:#041322bb;color:#a8edff;font-size:8px;letter-spacing:1px}
+.staff-info{padding:10px 11px 12px}
+.staff-name{font-size:13px;font-weight:700;letter-spacing:.5px}
+.staff-role{font-size:9px;color:#79dfff;margin-top:4px}
+.staff-desc{font-size:9px;color:#9bb5c9;line-height:1.6;margin-top:7px}
+.staff-status{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:9px;color:#8fffd0}
+.staff-status i{width:6px;height:6px;border-radius:50%;background:#58ffc2;box-shadow:0 0 8px #58ffc2}
+.agent-roster-wrap{margin-top:2px}
+@media(max-width:700px){.agent-roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.staff-portrait{height:125px}.staff-portrait svg{height:145px}.staff-info{padding:9px}}
+
 </style>
 </head>
 <body>
@@ -326,12 +343,28 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 
    <div class="right-stack">
     <div class="panel">
-     <div class="panel-title"><h3>AI AGENTS</h3><span>AGENT STATUS</span></div>
-     <div class="agent-list">
-      <div class="agent"><div class="agent-icon">⌕</div><div class="agent-info"><strong>リサーチエージェント</strong><small>商品候補・市場調査</small></div><span class="state">待機中</span></div>
-      <div class="agent"><div class="agent-icon">✎</div><div class="agent-info"><strong>コンテンツエージェント</strong><small>動画台本・記事制作</small></div><span class="state">待機中</span></div>
-      <div class="agent"><div class="agent-icon">▷</div><div class="agent-info"><strong>投稿エージェント</strong><small>SNS投稿・予約管理</small></div><span class="state">未接続</span></div>
-      <div class="agent"><div class="agent-icon">▥</div><div class="agent-info"><strong>アナリティクス</strong><small>クリック・成果・報酬分析</small></div><span class="state">未接続</span></div>
+     <div class="panel-title"><h3>AI EMPLOYEES</h3><span>YOUR TEAM / 04</span></div>
+     <div class="agent-roster">
+      <article class="staff-card">
+       <div class="staff-portrait"><span class="staff-tag">CREATIVE DIRECTOR</span>
+        <svg viewBox="0 0 160 180" role="img" aria-label="LUNA 女性アバター"><defs><linearGradient id="lHair" x2="1" y2="1"><stop stop-color="#39243f"/><stop offset="1" stop-color="#111c35"/></linearGradient><linearGradient id="lSkin" x2="0" y2="1"><stop stop-color="#ffe0ce"/><stop offset="1" stop-color="#d99c88"/></linearGradient></defs><path d="M30 180Q25 115 31 54Q39 7 81 8Q132 8 135 67L132 180Z" fill="url(#lHair)"/><path d="M43 72Q44 30 81 29Q118 29 119 75L113 111Q107 137 81 139Q54 136 47 109Z" fill="url(#lSkin)"/><path d="M40 76Q30 21 79 17Q131 14 124 83L111 61Q91 73 57 55L48 93Z" fill="url(#lHair)"/><path d="M57 85q8-7 16 0M89 85q8-7 16 0" fill="none" stroke="#563b48" stroke-width="3" stroke-linecap="round"/><ellipse cx="65" cy="91" rx="3" ry="4" fill="#26354b"/><ellipse cx="97" cy="91" rx="3" ry="4" fill="#26354b"/><path d="M74 113q8 7 16 0" fill="none" stroke="#a65367" stroke-width="2" stroke-linecap="round"/><path d="M44 146Q80 126 117 146L139 180H21Z" fill="#dcefff"/><path d="M63 140l18 24 17-24" fill="#6aa7d2"/></svg>
+       </div><div class="staff-info"><div class="staff-name">LUNA <span style="color:#8bdfff">ルナ</span></div><div class="staff-role">動画制作・SNS担当</div><div class="staff-desc">商品紹介、台本、動画企画、SNSコンテンツ制作</div><div class="staff-status"><i></i>待機中</div></div>
+      </article>
+      <article class="staff-card">
+       <div class="staff-portrait"><span class="staff-tag">INVESTMENT ANALYST</span>
+        <svg viewBox="0 0 160 180" role="img" aria-label="LEON 男性アバター"><defs><linearGradient id="eHair" x2="1" y2="1"><stop stop-color="#263b55"/><stop offset="1" stop-color="#101a2b"/></linearGradient><linearGradient id="eSkin" x2="0" y2="1"><stop stop-color="#f4d1b8"/><stop offset="1" stop-color="#bd866e"/></linearGradient></defs><path d="M29 180Q24 102 32 55Q38 15 82 15Q126 15 132 58L133 180Z" fill="url(#eHair)"/><path d="M46 69Q47 34 81 33Q115 33 115 72L110 111Q104 135 81 137Q57 134 50 110Z" fill="url(#eSkin)"/><path d="M39 75Q30 30 65 20Q100 3 124 43L118 73Q96 57 75 59L48 82Z" fill="url(#eHair)"/><path d="M56 83l17-2M88 81l17 2" stroke="#354256" stroke-width="3" stroke-linecap="round"/><ellipse cx="65" cy="91" rx="3" ry="4" fill="#26354b"/><ellipse cx="97" cy="91" rx="3" ry="4" fill="#26354b"/><path d="M73 113q8 4 16 0" fill="none" stroke="#8e4f4b" stroke-width="2"/><path d="M43 147Q80 127 117 147L139 180H21Z" fill="#203e5b"/><path d="M67 140l14 22 14-22" fill="#e6f3ff"/></svg>
+       </div><div class="staff-info"><div class="staff-name">LEON <span style="color:#8bdfff">レオン</span></div><div class="staff-role">投資・金融担当</div><div class="staff-desc">BTC・ETH・株式、市場動向、資産分析</div><div class="staff-status"><i></i>待機中</div></div>
+      </article>
+      <article class="staff-card">
+       <div class="staff-portrait"><span class="staff-tag">PRODUCT RESEARCH</span>
+        <svg viewBox="0 0 160 180" role="img" aria-label="EMMA 女性アバター"><defs><linearGradient id="mHair" x2="1" y2="1"><stop stop-color="#8a4d39"/><stop offset="1" stop-color="#3a2630"/></linearGradient><linearGradient id="mSkin" x2="0" y2="1"><stop stop-color="#ffe3d1"/><stop offset="1" stop-color="#d99e89"/></linearGradient></defs><path d="M28 180Q20 107 29 54Q36 10 81 10Q129 10 134 58L132 180Z" fill="url(#mHair)"/><path d="M44 71Q45 31 81 30Q117 31 117 73L111 111Q104 137 81 139Q56 136 49 110Z" fill="url(#mSkin)"/><path d="M38 78Q26 24 76 18Q119 13 126 54L115 81Q111 50 91 48Q66 68 45 91Z" fill="url(#mHair)"/><path d="M56 84q8-6 16 0M89 84q8-6 16 0" fill="none" stroke="#69444a" stroke-width="3" stroke-linecap="round"/><ellipse cx="65" cy="91" rx="3" ry="4" fill="#34404a"/><ellipse cx="97" cy="91" rx="3" ry="4" fill="#34404a"/><path d="M73 113q8 8 16 0" fill="none" stroke="#b65f70" stroke-width="2" stroke-linecap="round"/><path d="M43 147Q80 127 117 147L139 180H21Z" fill="#f0d8c9"/><path d="M66 140l15 23 14-23" fill="#a86c59"/></svg>
+       </div><div class="staff-info"><div class="staff-name">EMMA <span style="color:#8bdfff">エマ</span></div><div class="staff-role">物販・リサーチ担当</div><div class="staff-desc">売れる商品の発掘、価格比較、競合・案件調査</div><div class="staff-status"><i></i>待機中</div></div>
+      </article>
+      <article class="staff-card">
+       <div class="staff-portrait"><span class="staff-tag">BUSINESS STRATEGIST</span>
+        <svg viewBox="0 0 160 180" role="img" aria-label="NOAH 男性アバター"><defs><linearGradient id="nHair" x2="1" y2="1"><stop stop-color="#292b3b"/><stop offset="1" stop-color="#101827"/></linearGradient><linearGradient id="nSkin" x2="0" y2="1"><stop stop-color="#eecbb4"/><stop offset="1" stop-color="#b9826c"/></linearGradient></defs><path d="M29 180Q24 102 32 55Q38 15 82 15Q126 15 132 58L133 180Z" fill="url(#nHair)"/><path d="M46 69Q47 34 81 33Q115 33 115 72L110 111Q104 135 81 137Q57 134 50 110Z" fill="url(#nSkin)"/><path d="M39 75Q30 30 65 20Q100 3 124 43L118 72Q100 50 78 55L48 83Z" fill="url(#nHair)"/><path d="M56 82l17-2M88 80l17 2" stroke="#344052" stroke-width="3" stroke-linecap="round"/><ellipse cx="65" cy="91" rx="3" ry="4" fill="#26354b"/><ellipse cx="97" cy="91" rx="3" ry="4" fill="#26354b"/><path d="M73 113q8 4 16 0" fill="none" stroke="#8e4f4b" stroke-width="2"/><path d="M43 147Q80 127 117 147L139 180H21Z" fill="#273347"/><path d="M67 140l14 22 14-22" fill="#d8e5ef"/></svg>
+       </div><div class="staff-info"><div class="staff-name">NOAH <span style="color:#8bdfff">ノア</span></div><div class="staff-role">経営・収益分析担当</div><div class="staff-desc">売上・利益、事業計画、KPI、改善提案</div><div class="staff-status"><i></i>待機中</div></div>
+      </article>
      </div>
     </div>
     <div class="panel">
@@ -656,7 +689,7 @@ async function sendCommand(){
  $("response").textContent="Claudeが回答を生成しています...";
  $("send-command").disabled=true;
  try{
-  const response=await fetch("/.netlify/functions/chat",{
+  const response=await fetch("/api/chat",{
    method:"POST",
    headers:{"Content-Type":"application/json","x-jarvis-password":accessPassword},
    body:JSON.stringify({prompt:command})
