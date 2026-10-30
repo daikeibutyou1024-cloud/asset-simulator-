@@ -544,21 +544,47 @@ $("save-settings").addEventListener("click",()=>{
  showPage("dashboard");
 });
 
-function sendCommand(){
+async function sendCommand(){
  const command=$("command").value.trim();
  if(!command)return;
- $("orb-status").textContent="COMMAND RECEIVED · 指示を受信";
- $("equalizer").classList.add("paused");
- $("response").textContent=
-`指示を受け付けました：
-「${command}」
-
-現在は司令室の画面部分が稼働しています。Claude APIとの安全な接続はまだ設定されていないため、この画面だけではAIへの実行依頼は送信されていません。
-
-下の操作パネルから商品リサーチやコンテンツ制作の依頼文を作成できます。`;
- log("司令室に指示を入力しました");
- $("command").value="";
- setTimeout(()=>{$("orb-status").textContent="SYSTEM STANDBY · 待機中";$("equalizer").classList.remove("paused")},3500);
+ let accessPassword=localStorage.getItem("jarvis_access_password");
+ if(!accessPassword){
+  accessPassword=prompt("J.A.R.V.I.S.のアクセス用パスワードを入力してください");
+  if(!accessPassword)return;
+  localStorage.setItem("jarvis_access_password",accessPassword);
+ }
+ $("orb-status").textContent="PROCESSING · Claudeに接続中";
+ $("equalizer").classList.remove("paused");
+ $("response").textContent="Claudeが回答を生成しています...";
+ $("send-command").disabled=true;
+ try{
+  const response=await fetch("/.netlify/functions/chat",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","x-jarvis-password":accessPassword},
+   body:JSON.stringify({prompt:command})
+  });
+  const result=await response.json();
+  if(response.status===401){
+   localStorage.removeItem("jarvis_access_password");
+   throw new Error("パスワードが違います。もう一度送信して正しいパスワードを入力してください。");
+  }
+  if(!response.ok)throw new Error(result.detail||result.error||"Claudeとの通信に失敗しました");
+  $("response").textContent=result.answer||"回答を取得できませんでした。";
+  $("orb-status").textContent="AI RESPONSE RECEIVED · 回答完了";
+  log("Claudeから回答を受信しました");
+  $("command").value="";
+ }catch(error){
+  $("response").textContent="エラー："+error.message;
+  $("orb-status").textContent="CONNECTION ERROR · 接続エラー";
+  log("Claude接続エラー："+error.message);
+ }finally{
+  $("send-command").disabled=false;
+  setTimeout(()=>{
+   if($("orb-status").textContent!=="CONNECTION ERROR · 接続エラー"){
+    $("orb-status").textContent="SYSTEM STANDBY · 待機中";
+   }
+  },5000);
+ }
 }
 $("send-command").addEventListener("click",sendCommand);
 $("command").addEventListener("keydown",e=>{if(e.key==="Enter")sendCommand()});
