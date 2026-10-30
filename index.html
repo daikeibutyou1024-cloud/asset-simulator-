@@ -576,6 +576,7 @@ function setListening(active){
 }
 function startVoiceInput(){
  if(!SpeechRecognition){
+  $("orb-status").textContent="VOICE NOT SUPPORTED · 音声認識非対応";
   $("response").textContent="このブラウザは音声認識に対応していません。Google Chromeでお試しください。";
   log("音声認識に非対応のブラウザです");
   return;
@@ -603,10 +604,17 @@ function startVoiceInput(){
  try{recognition.start();setListening(true);}
  catch(error){setListening(false);$("response").textContent="マイクを開始できませんでした。Chromeのマイク許可を確認してください。";log("マイク起動エラー："+(error&&error.message?error.message:"不明なエラー"));}
 }
-$("orb-voice").addEventListener("click",()=>{
+document.addEventListener("click",event=>{
+ const orb=event.target.closest("#orb-voice");
+ if(!orb)return;
+ event.preventDefault();
  if(isListening){try{recognition.stop()}catch{};setListening(false);}
- else startVoiceInput();
-});
+ else{
+  $("orb-status").textContent="MIC ACTIVATION · マイク起動中";
+  log("球体がクリックされました");
+  startVoiceInput();
+ }
+},true);
 $("orb-voice").addEventListener("keydown",event=>{
  if(event.key==="Enter"||event.key===" "){
   event.preventDefault();
