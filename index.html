@@ -389,27 +389,19 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 
    <div class="right-stack">
     <div class="panel">
-     <div class="panel-title"><h3>YOUTUBE PRODUCTION TEAM</h3><span>LUNA MEDIA TEAM</span></div>
-     <div class="agent-roster">
+     <div class="panel-title"><h3>LUNA MEDIA STUDIO</h3><span>SOLE CREATIVE PARTNER</span></div>
+     <div class="agent-roster" style="grid-template-columns:1fr">
       <article class="staff-card">
-       <div class="staff-portrait"><span class="staff-tag">CREATIVE DIRECTOR</span>
-        <span class="staff-face" style="--mouth-x:56%;--mouth-y:69%;--mouth-w:16px"><img class="staff-photo" src="luna.jpg" alt="LUNA 女性アバター"><span class="staff-mouth" aria-hidden="true"></span></span>
-       </div><div class="staff-info"><div class="staff-name">LUNA <span style="color:#8bdfff">ルナ</span></div><button class="staff-speak" type="button" data-staff="luna" aria-label="lunaの声を聞く">🔊 話す</button><div class="staff-role">YouTube動画制作責任者</div><div class="staff-desc">企画、台本、音声、映像、Shorts制作を統括</div><div class="staff-status"><i></i>待機中</div></div>
-      </article>
-      <article class="staff-card">
-       <div class="staff-portrait"><span class="staff-tag">INVESTMENT ANALYST</span>
-        <span class="staff-face" style="--mouth-x:55%;--mouth-y:68%;--mouth-w:17px"><img class="staff-photo" src="leon.jpg" alt="LEON 男性アバター"><span class="staff-mouth" aria-hidden="true"></span></span>
-       </div><div class="staff-info"><div class="staff-name">LEON <span style="color:#8bdfff">レオン</span></div><button class="staff-speak" type="button" data-staff="leon" aria-label="leonの声を聞く">🔊 話す</button><div class="staff-role">YouTube企画・構成担当</div><div class="staff-desc">動画テーマ選定、視聴者ニーズ、構成分析</div><div class="staff-status"><i></i>待機中</div></div>
-      </article>
-      <article class="staff-card">
-       <div class="staff-portrait"><span class="staff-tag">PRODUCT RESEARCH</span>
-        <span class="staff-face" style="--mouth-x:54%;--mouth-y:69%;--mouth-w:16px"><img class="staff-photo" src="emma.jpg" alt="EMMA 女性アバター"><span class="staff-mouth" aria-hidden="true"></span></span>
-       </div><div class="staff-info"><div class="staff-name">EMMA <span style="color:#8bdfff">エマ</span></div><button class="staff-speak" type="button" data-staff="emma" aria-label="emmaの声を聞く">🔊 話す</button><div class="staff-role">YouTubeリサーチ担当</div><div class="staff-desc">情報の裏付け、競合動画、紹介案件の確認</div><div class="staff-status"><i></i>待機中</div></div>
-      </article>
-      <article class="staff-card">
-       <div class="staff-portrait"><span class="staff-tag">BUSINESS STRATEGIST</span>
-        <span class="staff-face" style="--mouth-x:56%;--mouth-y:69%;--mouth-w:17px"><img class="staff-photo" src="noah.jpg" alt="NOAH 男性アバター"><span class="staff-mouth" aria-hidden="true"></span></span>
-       </div><div class="staff-info"><div class="staff-name">NOAH <span style="color:#8bdfff">ノア</span></div><button class="staff-speak" type="button" data-staff="noah" aria-label="noahの声を聞く">🔊 話す</button><div class="staff-role">チャンネル分析担当</div><div class="staff-desc">再生数、視聴維持率、クリック、成果の分析</div><div class="staff-status"><i></i>待機中</div></div>
+       <div class="staff-portrait" style="height:210px"><span class="staff-tag">AI VIDEO CREATOR</span>
+        <span class="staff-face" style="--mouth-x:56%;--mouth-y:69%;--mouth-w:16px"><img class="staff-photo" src="luna.jpg" alt="LUNA 女性アバター"></span>
+       </div>
+       <div class="staff-info">
+        <div class="staff-name">LUNA <span style="color:#8bdfff">ルナ</span></div>
+        <button class="staff-speak" type="button" data-staff="luna" aria-label="LUNAの声を聞く">🔊 話す</button>
+        <div class="staff-role">唯一の動画制作パートナー</div>
+        <div class="staff-desc">企画・リサーチ・台本・画像・音声・サムネイル・動画制作を担当</div>
+        <div class="staff-status"><i></i>待機中</div>
+       </div>
       </article>
      </div>
     </div>
@@ -704,10 +696,7 @@ $("orb-voice").addEventListener("keydown",event=>{
 });
 
 const staffLines={
- luna:"はい、ルナです。動画やSNSの企画ならお任せください。どんなコンテンツを作りましょうか？",
- leon:"レオンです。投資や市場の状況を分析します。数字とリスクを確認していきましょう。",
- emma:"エマです。売れそうな商品をリサーチします。価格や需要を一緒に確認しましょう。",
- noah:"ノアです。事業の状況を整理して、利益につながる改善策を提案します。"
+ luna:"はい、ルナです。J.A.R.V.I.S.からの指令を受けて、企画から動画完成まで担当します。どんな動画を作りましょうか？"
 };
 function chooseJapaneseVoice(voices, gender){
  const ja=voices.filter(v=>/^ja(-|_)/i.test(v.lang));
