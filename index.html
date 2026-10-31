@@ -312,6 +312,24 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 .staff-speak{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:9px;padding:8px 10px;border:1px solid #2488b8;border-radius:7px;background:linear-gradient(110deg,#07304a,#075b86);color:#dffaff;font-size:11px;font-weight:700}
 .staff-speak:active{transform:scale(.98)}
 .staff-speak:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* 音声再生中の簡易リップシンク */
+.staff-mouth{
+ position:absolute;z-index:3;left:50%;top:72%;
+ width:13px;height:4px;transform:translateX(-50%);
+ border-radius:50%;background:#743b43;opacity:0;
+ box-shadow:0 1px 1px #2a1018;
+ pointer-events:none;
+}
+.staff-portrait.speaking .staff-mouth{
+ opacity:.95;
+ animation:mouth-talk .19s ease-in-out infinite alternate;
+}
+@keyframes mouth-talk{
+ from{height:3px;transform:translateX(-50%) scaleX(.8) scaleY(.65)}
+ to{height:9px;transform:translateX(-50%) scaleX(1.05) scaleY(1)}
+}
+
 </style>
 </head>
 <body>
@@ -367,22 +385,22 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
      <div class="agent-roster">
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">CREATIVE DIRECTOR</span>
-        <img class="staff-photo" src="luna.jpg" alt="LUNA 女性アバター">
+        <img class="staff-photo" src="luna.jpg" alt="LUNA 女性アバター"><span class="staff-mouth" aria-hidden="true"></span>
        </div><div class="staff-info"><div class="staff-name">LUNA <span style="color:#8bdfff">ルナ</span></div><button class="staff-speak" type="button" data-staff="luna" aria-label="lunaの声を聞く">🔊 話す</button><div class="staff-role">動画制作・SNS担当</div><div class="staff-desc">商品紹介、台本、動画企画、SNSコンテンツ制作</div><div class="staff-status"><i></i>待機中</div></div>
       </article>
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">INVESTMENT ANALYST</span>
-        <img class="staff-photo" src="leon.jpg" alt="LEON 男性アバター">
+        <img class="staff-photo" src="leon.jpg" alt="LEON 男性アバター"><span class="staff-mouth" aria-hidden="true"></span>
        </div><div class="staff-info"><div class="staff-name">LEON <span style="color:#8bdfff">レオン</span></div><button class="staff-speak" type="button" data-staff="leon" aria-label="leonの声を聞く">🔊 話す</button><div class="staff-role">投資・金融担当</div><div class="staff-desc">BTC・ETH・株式、市場動向、資産分析</div><div class="staff-status"><i></i>待機中</div></div>
       </article>
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">PRODUCT RESEARCH</span>
-        <img class="staff-photo" src="emma.jpg" alt="EMMA 女性アバター">
+        <img class="staff-photo" src="emma.jpg" alt="EMMA 女性アバター"><span class="staff-mouth" aria-hidden="true"></span>
        </div><div class="staff-info"><div class="staff-name">EMMA <span style="color:#8bdfff">エマ</span></div><button class="staff-speak" type="button" data-staff="emma" aria-label="emmaの声を聞く">🔊 話す</button><div class="staff-role">物販・リサーチ担当</div><div class="staff-desc">売れる商品の発掘、価格比較、競合・案件調査</div><div class="staff-status"><i></i>待機中</div></div>
       </article>
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">BUSINESS STRATEGIST</span>
-        <img class="staff-photo" src="noah.jpg" alt="NOAH 男性アバター">
+        <img class="staff-photo" src="noah.jpg" alt="NOAH 男性アバター"><span class="staff-mouth" aria-hidden="true"></span>
        </div><div class="staff-info"><div class="staff-name">NOAH <span style="color:#8bdfff">ノア</span></div><button class="staff-speak" type="button" data-staff="noah" aria-label="noahの声を聞く">🔊 話す</button><div class="staff-role">経営・収益分析担当</div><div class="staff-desc">売上・利益、事業計画、KPI、改善提案</div><div class="staff-status"><i></i>待機中</div></div>
       </article>
      </div>
@@ -695,11 +713,16 @@ function chooseJapaneseVoice(voices, gender){
  }
  return ja.find(v=>v.default)||ja[0];
 }
+function stopStaffMouths(){
+ document.querySelectorAll(".staff-portrait.speaking").forEach(p=>p.classList.remove("speaking"));
+}
 function speakStaff(id){
  if(!("speechSynthesis" in window)){
   $("response").textContent="この端末では音声読み上げに対応していません。";
   return;
  }
+ stopStaffMouths();
+ const portrait=document.querySelector('[data-staff="'+id+'"]')?.closest(".staff-card")?.querySelector(".staff-portrait");
  const female=id==="luna"||id==="emma";
  const voices=window.speechSynthesis.getVoices();
  const selected=chooseJapaneseVoice(voices,female?"female":"male");
@@ -709,10 +732,13 @@ function speakStaff(id){
  utterance.pitch=female?1.32:0.88;
  if(selected)utterance.voice=selected;
  window.speechSynthesis.cancel();
+ utterance.onstart=()=>{if(portrait)portrait.classList.add("speaking");};
+ const finishSpeaking=()=>{if(portrait)portrait.classList.remove("speaking");};
+ utterance.onend=()=>{finishSpeaking();if(!$("orb-status").textContent.startsWith("PROCESSING"))$("orb-status").textContent="SYSTEM STANDBY · 待機中";};
+ utterance.onerror=finishSpeaking;
  window.speechSynthesis.speak(utterance);
  $("orb-status").textContent=(id.toUpperCase())+" SPEAKING · 音声再生中";
  log((id.toUpperCase())+"が話しています");
- utterance.onend=()=>{if(!$("orb-status").textContent.startsWith("PROCESSING"))$("orb-status").textContent="SYSTEM STANDBY · 待機中";};
 }
 document.querySelectorAll("[data-staff]").forEach(button=>{
  button.addEventListener("click",()=>speakStaff(button.dataset.staff));
