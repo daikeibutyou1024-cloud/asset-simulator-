@@ -10,7 +10,7 @@
 <div class="field"><label for="length">動画の長さ</label><select id="length"><option>約60秒（YouTube Shorts）</option><option>約3分</option><option>約5分</option><option>約8分</option></select></div>
 <div class="field"><label for="notes">追加条件（任意）</label><textarea id="notes" placeholder="例：専門用語を避ける。誇大広告をしない。具体例を入れる。"></textarea></div>
 <div class="actions"><button class="btn" id="make">Claudeで企画・台本を生成</button><button class="secondary" id="copyScript">台本をコピー</button></div><p class="status" id="status">Claude API接続を使用。生成結果は下の台本欄に反映されます。</p><h3>生成結果・ナレーション台本</h3><div class="field"><textarea id="script" style="min-height:300px" placeholder="生成した台本がここに表示されます。必要なら編集できます。"></textarea></div>
-<h2>② 字幕付き動画を書き出す</h2><p>台本を短い字幕シーンに分け、縦型9:16の動画としてブラウザ内で生成します。</p><div class="field"><label for="videoTitle">動画タイトル</label><input id="videoTitle" placeholder="LUNAのAIマネーラボ"></div><div class="video-preview"><div class="preview-title" id="previewTitle">LUNAのAIマネーラボ</div><div class="preview-avatar" id="previewAvatar">L</div><div class="preview-caption" id="previewCaption">ここに字幕が表示されます</div><div class="small">LUNAのAIマネーラボ</div></div><div class="actions"><button class="btn" id="render">字幕付き動画を作成</button><button class="secondary" id="download" disabled>動画を保存</button></div><p class="status" id="renderStatus">動画作成前です。ブラウザでWebM形式を書き出します。</p><p class="small">注意：この書き出しは字幕・背景・仮アバターを含む無音動画です。読み上げ音声の動画への合成、自然な口パク、MP4変換、YouTubeへの自動投稿はまだ未接続です。音声プレビューは端末の日本語音声を使います。</p></section></div></main>
+<h2>② 字幕付き動画を書き出す</h2><p>台本を短い字幕シーンに分け、縦型9:16の動画としてブラウザ内で生成します。</p><div class="field"><label for="videoTitle">動画タイトル</label><input id="videoTitle" placeholder="LUNAのAIマネーラボ"></div><div class="video-preview"><div class="preview-title" id="previewTitle">LUNAのAIマネーラボ</div><div class="preview-avatar" id="previewAvatar">L</div><div class="preview-caption" id="previewCaption">ここに字幕が表示されます</div><div class="small">LUNAのAIマネーラボ</div></div><div class="actions"><button class="btn" id="render">無音の字幕動画を作成</button><button class="btn" id="renderWithVoice">音声付き動画を録画</button><button class="secondary" id="download" disabled>動画を保存</button></div><p class="status" id="renderStatus">無音動画はそのまま作成可能。音声付き録画はPC版Chrome/Edgeでタブ音声の共有が必要です。</p><p class="small">注意：音声付き録画はPC版Chrome/Edgeで「このタブ」と「タブの音声を共有」を選ぶ必要があります。iPhone/Safariでは利用できない場合があります。WebM形式で保存します。自然な口パク、MP4変換、YouTube自動投稿は未接続です。</p></section></div></main>
 <script>
 const $=id=>document.getElementById(id);let videoUrl=null;let avatarImage=null;let speechActive=false;
 function setSpeaking(on){speechActive=on;$("portrait").classList.toggle("talking",on);$("previewAvatar").style.transform=on?"scale(1.04)":"scale(1)";}
@@ -28,5 +28,55 @@ $("render").addEventListener("click",async()=>{const raw=$("script").value.trim(
 $("render").disabled=true;$("download").disabled=true;$("renderStatus").textContent="動画をレンダリングしています...";
 try{const lines=splitCaption(raw).slice(0,120);const canvas=document.createElement("canvas");canvas.width=720;canvas.height=1280;const ctx=canvas.getContext("2d");const stream=canvas.captureStream(24);const mime=["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"].find(x=>MediaRecorder.isTypeSupported(x));if(!mime)throw new Error("WebM形式に対応していません。");const rec=new MediaRecorder(stream,{mimeType:mime});const chunks=[];rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};const done=new Promise((resolve,reject)=>{rec.onstop=resolve;rec.onerror=()=>reject(new Error("動画の録画に失敗しました"));});rec.start();const title=$("videoTitle").value.trim()||"LUNAのAIマネーラボ";for(let i=0;i<lines.length;i++){const start=performance.now();while(performance.now()-start<2100){const g=ctx.createLinearGradient(0,0,720,1280);g.addColorStop(0,"#123d60");g.addColorStop(.55,"#071a31");g.addColorStop(1,"#020711");ctx.fillStyle=g;ctx.fillRect(0,0,720,1280);ctx.fillStyle="#70eaff";ctx.font="bold 25px sans-serif";ctx.textAlign="center";ctx.fillText(title.slice(0,28),360,100);ctx.strokeStyle="#62eaff";ctx.lineWidth=5;ctx.beginPath();ctx.arc(360,440,125,0,Math.PI*2);ctx.stroke();if(avatarImage){const scale=Math.min(220/avatarImage.width,220/avatarImage.height);ctx.drawImage(avatarImage,360-avatarImage.width*scale/2,440-avatarImage.height*scale/2,avatarImage.width*scale,avatarImage.height*scale);}else{ctx.fillStyle="#d9f8ff";ctx.font="bold 120px sans-serif";ctx.fillText("L",360,480);}ctx.fillStyle="#061322";ctx.fillRect(48,790,624,250);ctx.strokeStyle="#53ddff";ctx.strokeRect(48,790,624,250);ctx.fillStyle="#ffffff";ctx.font="bold 38px sans-serif";ctx.textAlign="center";const words=lines[i];const chunks=[];for(let k=0;k<words.length;k+=16)chunks.push(words.slice(k,k+16));chunks.slice(0,4).forEach((line,n)=>ctx.fillText(line,360,865+n*54));ctx.fillStyle="#8bbbd4";ctx.font="22px sans-serif";ctx.fillText("LUNAのAIマネーラボ",360,1170);await new Promise(r=>setTimeout(r,120));}}
 rec.stop();await done;stream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:"video/webm"});if(videoUrl)URL.revokeObjectURL(videoUrl);videoUrl=URL.createObjectURL(blob);$("download").disabled=false;$("renderStatus").textContent="動画を作成しました。保存ボタンからWebMファイルをダウンロードできます。";}catch(e){$("renderStatus").textContent="書き出しエラー："+e.message;}finally{$("render").disabled=false;}});
+
+// 音声付き録画：タブ音声を共有し、Canvas動画と合成してWebM保存
+$("renderWithVoice").addEventListener("click",async()=>{
+ const raw=$("script").value.trim();
+ if(!raw){$("renderStatus").textContent="先に台本を生成または入力してください。";return;}
+ if(!("speechSynthesis"in window)||!("MediaRecorder"in window)||!navigator.mediaDevices?.getDisplayMedia){$("renderStatus").textContent="音声付き録画はPC版Chrome/Edgeでお試しください。";return;}
+ let capture=null,rec=null,canvasStream=null;
+ $("renderWithVoice").disabled=true;$("render").disabled=true;$("download").disabled=true;
+ try{
+  $("renderStatus").textContent="共有画面の選択が開きます。「このタブ」と「タブの音声を共有」を選んでください。";
+  capture=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+  const audioTracks=capture.getAudioTracks();
+  if(!audioTracks.length)throw new Error("タブ音声が共有されていません。共有設定で「タブの音声を共有」を有効にしてください。");
+  const lines=splitCaption(raw).slice(0,120);
+  const canvas=document.createElement("canvas");canvas.width=720;canvas.height=1280;
+  const ctx=canvas.getContext("2d");canvasStream=canvas.captureStream(24);
+  const mixed=new MediaStream([...canvasStream.getVideoTracks(),...audioTracks]);
+  const mime=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"].find(x=>MediaRecorder.isTypeSupported(x));
+  if(!mime)throw new Error("このブラウザはWebM録画に対応していません。");
+  rec=new MediaRecorder(mixed,{mimeType:mime});const chunks=[];
+  rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  const stopped=new Promise((resolve,reject)=>{rec.onstop=resolve;rec.onerror=()=>reject(new Error("録画に失敗しました"));});
+  const title=$("videoTitle").value.trim()||"LUNAのAIマネーラボ";
+  let active=true,index=0,last=performance.now();
+  function draw(){
+   if(!active)return;
+   const now=performance.now();if(now-last>2500){index=Math.min(index+1,lines.length-1);last=now;}
+   const g=ctx.createLinearGradient(0,0,720,1280);g.addColorStop(0,"#123d60");g.addColorStop(.55,"#071a31");g.addColorStop(1,"#020711");ctx.fillStyle=g;ctx.fillRect(0,0,720,1280);
+   ctx.fillStyle="#70eaff";ctx.font="bold 25px sans-serif";ctx.textAlign="center";ctx.fillText(title.slice(0,28),360,100);
+   ctx.strokeStyle="#62eaff";ctx.lineWidth=5;ctx.beginPath();ctx.arc(360,440,125,0,Math.PI*2);ctx.stroke();
+   if(avatarImage){const sc=Math.min(220/avatarImage.width,220/avatarImage.height);ctx.drawImage(avatarImage,360-avatarImage.width*sc/2,440-avatarImage.height*sc/2,avatarImage.width*sc,avatarImage.height*sc);}
+   else{ctx.fillStyle="#d9f8ff";ctx.font="bold 120px sans-serif";ctx.fillText("L",360,480);}
+   ctx.fillStyle="#061322";ctx.fillRect(48,790,624,250);ctx.strokeStyle="#53ddff";ctx.strokeRect(48,790,624,250);
+   ctx.fillStyle="#fff";ctx.font="bold 38px sans-serif";const txt=lines[index]||"";for(let k=0;k<Math.min(4,Math.ceil(txt.length/16));k++)ctx.fillText(txt.slice(k*16,(k+1)*16),360,865+k*54);
+   ctx.fillStyle="#8bbbd4";ctx.font="22px sans-serif";ctx.fillText("LUNAのAIマネーラボ",360,1170);
+   requestAnimationFrame(draw);
+  }
+  rec.start();draw();$("renderStatus").textContent="LUNAが読み上げ中です。録画しています...";
+  const utter=new SpeechSynthesisUtterance(raw);utter.lang="ja-JP";utter.rate=1;utter.pitch=1.08;
+  const ja=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith("ja"));if(ja[0])utter.voice=ja[0];
+  utter.onstart=()=>setSpeaking(true);
+  utter.onend=()=>{setSpeaking(false);active=false;setTimeout(()=>{if(rec&&rec.state!=="inactive")rec.stop();},500);};
+  utter.onerror=()=>{setSpeaking(false);active=false;if(rec&&rec.state!=="inactive")rec.stop();};
+  speechSynthesis.cancel();speechSynthesis.speak(utter);
+  await stopped;
+  const blob=new Blob(chunks,{type:"video/webm"});if(videoUrl)URL.revokeObjectURL(videoUrl);videoUrl=URL.createObjectURL(blob);
+  $("download").disabled=false;$("renderStatus").textContent="音声付きWebM動画を作成しました。保存ボタンからダウンロードできます。";
+ }catch(e){speechSynthesis.cancel();$("renderStatus").textContent="音声付き録画エラー："+e.message;}
+ finally{if(capture)capture.getTracks().forEach(t=>t.stop());if(canvasStream)canvasStream.getTracks().forEach(t=>t.stop());setSpeaking(false);$("renderWithVoice").disabled=false;$("render").disabled=false;}
+});
 $("download").addEventListener("click",()=>{if(!videoUrl)return;const a=document.createElement("a");a.href=videoUrl;a.download="luna-youtube-video.webm";document.body.appendChild(a);a.click();a.remove();});
 </script></body></html>
