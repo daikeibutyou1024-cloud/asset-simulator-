@@ -424,7 +424,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
       <button class="quick" data-page="content"><div class="quick-icon">✎</div><strong>SACHI動画企画・台本</strong><small>Shorts・通常動画の台本を制作</small></button>
       <button class="quick" data-page="analytics"><div class="quick-icon">▥</div><strong>チャンネル分析</strong><small>再生・維持率・クリック・成果</small></button>
       <button class="quick" data-page="settings"><div class="quick-icon">⚙</div><strong>チャンネル運用設定</strong><small>チャンネル方針と制作ルールを管理</small></button>
-      <button class="quick" onclick="location.href='video-studio.html?from=jarvis&command='+encodeURIComponent('AI・副業・お金の初心者向けAI活用：最初の一歩')"><div class="quick-icon">🎬</div><strong>J.A.R.V.I.S. → SACHI制作指令</strong><small>司令室からSACHIへ動画制作を依頼</small></button>
+      <button class="quick" id="sachi-mission"><div class="quick-icon">🎬</div><strong>J.A.R.V.I.S. → SACHI制作指令</strong><small>司令室からSACHIへ動画制作を依頼</small></button>
      </div>
     </div>
    </div>
@@ -799,6 +799,14 @@ async function sendCommand(){
   }
   if(!response.ok)throw new Error(result.detail||result.error||"Claudeとの通信に失敗しました");
   $("response").textContent=result.answer||"回答を取得できませんでした。";
+  if(command.startsWith("【SACHI制作指令】")){
+   const link=document.createElement("a");
+   link.href="video-studio.html?from=jarvis&command="+encodeURIComponent("AI・副業・お金の初心者向けAI活用：最初の一歩");
+   link.textContent="▶ SACHI制作スタジオへ司令を渡す";
+   link.style.cssText="display:inline-block;margin-top:14px;padding:11px 15px;border:1px solid #57eaff;border-radius:9px;color:#8feaff;text-decoration:none;font-weight:bold";
+   $("response").appendChild(document.createElement("br"));
+   $("response").appendChild(link);
+  }
   if(result.answer)speakAnswer(result.answer);
   $("orb-status").textContent="AI RESPONSE RECEIVED · 回答完了";
   log("Claudeから回答を受信しました");
@@ -816,6 +824,11 @@ async function sendCommand(){
   },5000);
  }
 }
+document.getElementById("sachi-mission").addEventListener("click",()=>{
+ const mission="【SACHI制作指令】AI・副業・お金の初心者向けAI活用：最初の一歩。SACHIは約60秒のYouTube Shortsを企画・台本作成してください。";
+ $("command").value=mission;
+ sendCommand();
+});
 $("send-command").addEventListener("click",sendCommand);
 $("command").addEventListener("keydown",e=>{if(e.key==="Enter")sendCommand()});
 
