@@ -404,7 +404,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">PRODUCT RESEARCH</span>
         <span class="staff-face" style="--mouth-x:54%;--mouth-y:69%;--mouth-w:16px"><img class="staff-photo" src="emma.jpg" alt="EMMA 女性アバター"><span class="staff-mouth" aria-hidden="true"></span></span>
-       </div><div class="staff-info"><div class="staff-name">EMMA <span style="color:#8bdfff">エマ</span></div><button class="staff-speak" type="button" data-staff="emma" aria-label="emmaの声を聞く">🔊 話す</button><div class="staff-role">動画リサーチ担当</div><div class="staff-desc">情報の裏付け、競合動画、紹介案件の確認</div><div class="staff-status"><i></i>待機中</div></div>
+       </div><div class="staff-info"><div class="staff-name">EMMA <span style="color:#8bdfff">エマ</span></div><button class="staff-speak" type="button" data-staff="emma" aria-label="emmaの声を聞く">🔊 話す</button><div class="staff-role">YouTubeリサーチ担当</div><div class="staff-desc">情報の裏付け、競合動画、紹介案件の確認</div><div class="staff-status"><i></i>待機中</div></div>
       </article>
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">BUSINESS STRATEGIST</span>
@@ -416,10 +416,10 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
     <div class="panel">
      <div class="panel-title"><h3>YOUTUBE WORKFLOW</h3><span>ONE CHANNEL / ONE MISSION</span></div>
      <div class="quick-grid">
-      <button class="quick" data-page="research"><div class="quick-icon">⌕</div><strong>テーマ・案件リサーチ</strong><small>動画テーマと紹介案件を調査</small></button>
-      <button class="quick" data-page="content"><div class="quick-icon">✎</div><strong>動画企画・台本</strong><small>LUNAのShorts・通常動画を制作</small></button>
+      <button class="quick" data-page="research"><div class="quick-icon">⌕</div><strong>YouTubeテーマリサーチ</strong><small>視聴者の悩み・検索テーマ・競合を調査</small></button>
+      <button class="quick" data-page="content"><div class="quick-icon">✎</div><strong>LUNA動画企画・台本</strong><small>Shorts・通常動画の台本を制作</small></button>
       <button class="quick" data-page="analytics"><div class="quick-icon">▥</div><strong>チャンネル分析</strong><small>再生・維持率・クリック・成果</small></button>
-      <button class="quick" data-page="settings"><div class="quick-icon">⚙</div><strong>チャンネル運用設定</strong><small>投稿方針と制作ルールを管理</small></button>
+      <button class="quick" data-page="settings"><div class="quick-icon">⚙</div><strong>チャンネル運用設定</strong><small>チャンネル方針と制作ルールを管理</small></button>
       <button class="quick" onclick="location.href='video-studio.html'"><div class="quick-icon">🎬</div><strong>LUNA動画スタジオ</strong><small>台本・音声・動画制作</small></button>
      </div>
     </div>
@@ -443,7 +443,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
    <div class="panel">
     <div class="panel-title"><h3>MISSION STATUS</h3><span>PROJECT PLAN</span></div>
     <div class="agent-list">
-     <div class="agent"><div class="agent-icon">01</div><div class="agent-info"><strong>① 企画・リサーチ</strong><small>視聴者の悩み・テーマ・案件を選定</small></div><span class="state">準備</span></div>
+     <div class="agent"><div class="agent-icon">01</div><div class="agent-info"><strong>① 企画・リサーチ</strong><small>視聴者の悩み・検索テーマ・競合を調査</small></div><span class="state">準備</span></div>
      <div class="agent"><div class="agent-icon">02</div><div class="agent-info"><strong>② 動画制作</strong><small>LUNAの台本・音声・映像・MP4</small></div><span class="state">準備</span></div>
      <div class="agent"><div class="agent-icon">03</div><div class="agent-info"><strong>③ 投稿・分析</strong><small>YouTube投稿・視聴データ・収益分析</small></div><span class="state">未接続</span></div>
     </div>
@@ -452,22 +452,22 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  </section>
 
  <section id="research" class="page hidden">
-  <div class="heading"><div><div class="kicker">MARKET INTELLIGENCE / 002</div><h2>商品リサーチ</h2><div class="sub">紹介する商品やサービスの調査依頼文を作成します。</div></div></div>
+  <div class="heading"><div><div class="kicker">YOUTUBE RESEARCH / 002</div><h2>YouTubeテーマリサーチ</h2><div class="sub">視聴者の悩み・検索テーマ・競合動画を調べます。</div></div></div>
   <div class="panel form-panel">
-   <div class="field"><label for="genre">調査ジャンル</label><input id="genre" placeholder="例：AIツール、副業サービス、便利なアプリ"></div>
-   <div class="field"><label for="audience">想定する読者・視聴者</label><input id="audience" placeholder="例：副業を始めたい会社員"></div>
-   <div class="field"><label for="criteria">調査条件</label><textarea id="criteria" placeholder="例：無料で始められる、公式アフィリエイト制度がある、初心者向け"></textarea></div>
-   <button class="btn" id="make-research">調査依頼文を作成</button>
+   <div class="field"><label for="genre">動画ジャンル</label><input id="genre" placeholder="AI・副業・お金"></div>
+   <div class="field"><label for="audience">想定する視聴者</label><input id="audience" placeholder="例：副業を始めたい会社員"></div>
+   <div class="field"><label for="criteria">調査したい内容</label><textarea id="criteria" placeholder="例：無料で始められる、公式アフィリエイト制度がある、初心者向け"></textarea></div>
+   <button class="btn" id="make-research">YouTube調査指示を作成</button>
   </div>
   <div class="panel form-panel">
-   <div class="output-actions"><div class="panel-title" style="margin:0"><h3>RESEARCH BRIEF</h3></div><button class="btn-secondary" data-copy="research-output">コピー</button></div>
+   <div class="output-actions"><div class="panel-title" style="margin:0"><h3>YOUTUBE RESEARCH BRIEF</h3></div><button class="btn-secondary" data-copy="research-output">コピー</button></div>
    <div class="output" id="research-output">調査依頼文がここに表示されます。</div>
   </div>
   <button class="btn-secondary back" data-page="dashboard" style="margin-top:13px">← 司令室に戻る</button>
  </section>
 
  <section id="content" class="page hidden">
-  <div class="heading"><div><div class="kicker">CONTENT STUDIO / 003</div><h2>② 台本・動画制作</h2><div class="sub">動画や記事の制作指示をまとめます。</div></div></div>
+  <div class="heading"><div><div class="kicker">YOUTUBE SCRIPT STUDIO / 003</div><h2>動画企画・台本</h2><div class="sub">LUNAが出演するYouTube動画の企画と台本を作ります。</div></div></div>
   <div class="panel form-panel">
    <div class="field"><label for="platform">制作媒体</label><select id="platform"><option>YouTubeショート</option><option>Instagramリール</option><option>note記事</option><option>YouTube動画</option></select></div>
    <div class="field"><label for="topic">テーマ・商品</label><input id="topic" placeholder="例：副業初心者におすすめのAIツール3選"></div>
@@ -537,7 +537,7 @@ function log(message){
 function showPage(id){
  pages.forEach(p=>p.classList.toggle("hidden",p.id!==id));
  window.scrollTo({top:0,behavior:"smooth"});
- if(id!=="dashboard")log(({research:"商品リサーチ画面を開きました",content:"② 台本・動画制作画面を開きました",analytics:"収益分析画面を開きました",settings:"システム設定画面を開きました"})[id]||"司令室を表示しました");
+ if(id!=="dashboard")log(({research:"YouTubeテーマリサーチ画面を開きました",content:"動画企画・台本画面を開きました",analytics:"YouTubeチャンネル分析画面を開きました",settings:"チャンネル運用設定画面を開きました"})[id]||"司令室を表示しました");
 }
 navButtons.forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
 
@@ -546,20 +546,20 @@ function makeResearch(){
  const audience=$("audience").value.trim()||"副業初心者";
  const criteria=$("criteria").value.trim()||"無料で始められること、公式紹介制度があること";
  $("research-output").textContent=
-`あなたはアフィリエイト商品リサーチ担当です。
+`あなたはYouTubeチャンネル「LUNAのAIマネーラボ」のリサーチ担当です。
 
 【ジャンル】${genre}
-【対象読者】${audience}
-【調査条件】${criteria}
+【想定視聴者】${audience}
+【調査内容】${criteria}
 
 以下を調査してください。
-1. 実在する商品・サービス候補
-2. 公式サイトと公式アフィリエイト制度
-3. 報酬条件、成果承認条件、利用料金
-4. メリット、デメリット、利用時の注意点
-5. YouTubeショートやnote向けの企画案
-6. 根拠となる公式情報のリンク
-7. 競合との差別化ポイント
+1. 視聴者が検索している悩み・疑問
+2. YouTubeで需要が見込める動画テーマ
+3. 競合動画の切り口と差別化案
+4. 公式情報で確認できる事実・根拠
+5. Shortsと通常動画それぞれの企画案
+6. タイトル・冒頭フック案
+7. 紹介する場合に適した関連サービスと注意点
 
 報酬額や条件を推測で断定せず、確認できない情報は「要確認」としてください。広告であることの明示も考慮してください。`;
  log("商品リサーチの依頼文を作成しました");
@@ -571,9 +571,9 @@ function makeContent(){
  const topic=$("topic").value.trim()||"AI・副業の初心者向けテーマ";
  const tone=$("tone").value.trim()||"具体例、メリット、デメリット、注意点を公平に説明する";
  $("content-output").textContent=
-`あなたはアフィリエイト② 台本・動画制作担当です。
+`あなたは「LUNAのAIマネーラボ」のYouTube台本担当です。LUNAが画面に登場して話す前提で作成してください。
 
-【媒体】${platform}
+【YouTube動画形式】${platform}
 【テーマ】${topic}
 【希望】${tone}
 
@@ -585,7 +585,7 @@ function makeContent(){
 5. 具体例、メリット、デメリット
 6. 自然な行動喚起（CTA）
 7. 事実確認が必要な箇所と公式情報
-8. 投稿文と関連ハッシュタグ
+8. YouTube概要欄・固定コメント・関連ハッシュタグ
 
 未確認の体験談や収益実績を捏造しないでください。広告・アフィリエイトであることを適切に明示し、誇大な収益保証を避けてください。`;
  log("② 台本・動画制作の指示文を作成しました");
