@@ -293,6 +293,23 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 @media(max-width:700px){.agent-roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.staff-portrait{height:125px}.staff-portrait svg{height:145px}.staff-info{padding:9px}}
 
 
+/* プロフィールをスタジオ撮影風に見せる */
+.staff-portrait{
+ background:
+  radial-gradient(ellipse at 50% 28%,#39749a 0%,#173b5b 38%,#071323 78%),
+  linear-gradient(135deg,#102c46,#06101f);
+}
+.staff-portrait:before{
+ content:"";position:absolute;inset:8px 8px 0;border:1px solid #70dfff35;
+ border-radius:9px 9px 0 0;z-index:1;pointer-events:none;
+}
+.staff-portrait svg{
+ height:166px;max-width:184px;
+ filter:drop-shadow(0 10px 18px #000b) drop-shadow(0 0 8px #46caff30);
+ transform:scale(1.04);transform-origin:50% 100%;
+}
+.staff-card{box-shadow:0 8px 24px #0005,inset 0 1px #b9efff12}
+.staff-card:hover{border-color:#57eaff88;box-shadow:0 0 22px #168cff24}
 .staff-speak{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:9px;padding:8px 10px;border:1px solid #2488b8;border-radius:7px;background:linear-gradient(110deg,#07304a,#075b86);color:#dffaff;font-size:11px;font-weight:700}
 .staff-speak:active{transform:scale(.98)}
 .staff-speak:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
@@ -667,20 +684,30 @@ const staffLines={
  emma:"エマです。売れそうな商品をリサーチします。価格や需要を一緒に確認しましょう。",
  noah:"ノアです。事業の状況を整理して、利益につながる改善策を提案します。"
 };
+function chooseJapaneseVoice(voices, gender){
+ const ja=voices.filter(v=>/^ja(-|_)/i.test(v.lang));
+ if(!ja.length)return null;
+ const patterns=gender==="female"
+  ? [/nanami/i,/haruka/i,/ayumi/i,/kyoko/i,/female|woman/i]
+  : [/keita/i,/ichiro/i,/otoya/i,/male|man/i];
+ for(const pattern of patterns){
+  const match=ja.find(v=>pattern.test(v.name));
+  if(match)return match;
+ }
+ return ja.find(v=>v.default)||ja[0];
+}
 function speakStaff(id){
  if(!("speechSynthesis" in window)){
   $("response").textContent="この端末では音声読み上げに対応していません。";
   return;
  }
  const female=id==="luna"||id==="emma";
- const voices=window.speechSynthesis.getVoices().filter(v=>/^ja(-|_)/i.test(v.lang));
- const femaleVoice=voices.find(v=>/nanami|haruka|ayumi|female|woman|kyoko/i.test(v.name));
- const maleVoice=voices.find(v=>/keita|ichiro|male|man|otoya/i.test(v.name));
+ const voices=window.speechSynthesis.getVoices();
+ const selected=chooseJapaneseVoice(voices,female?"female":"male");
  const utterance=new SpeechSynthesisUtterance(staffLines[id]||"こんにちは。");
  utterance.lang="ja-JP";
- utterance.rate=1.0;
- utterance.pitch=female?1.18:0.86;
- const selected=female?femaleVoice:maleVoice;
+ utterance.rate=female?0.96:0.94;
+ utterance.pitch=female?1.32:0.88;
  if(selected)utterance.voice=selected;
  window.speechSynthesis.cancel();
  window.speechSynthesis.speak(utterance);
