@@ -315,12 +315,19 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 
 /* 音声再生中の簡易リップシンク */
 .staff-mouth{
- position:absolute;z-index:3;left:50%;top:72%;
- width:13px;height:4px;transform:translateX(-50%);
+ position:absolute;z-index:3;
+ left:var(--mouth-x,50%);top:var(--mouth-y,78%);
+ width:var(--mouth-w,13px);height:4px;
+ transform:translate(-50%,-50%);
  border-radius:50%;background:#743b43;opacity:0;
  box-shadow:0 1px 1px #2a1018;
  pointer-events:none;
 }
+/* 顔写真ごとに口元の位置を個別調整 */
+.staff-card:nth-child(1) .staff-portrait{--mouth-x:50%;--mouth-y:77%;--mouth-w:13px}
+.staff-card:nth-child(2) .staff-portrait{--mouth-x:50%;--mouth-y:76%;--mouth-w:14px}
+.staff-card:nth-child(3) .staff-portrait{--mouth-x:50%;--mouth-y:78%;--mouth-w:13px}
+.staff-card:nth-child(4) .staff-portrait{--mouth-x:50%;--mouth-y:77%;--mouth-w:14px}
 .staff-portrait.speaking .staff-mouth{
  opacity:.95;
  animation:mouth-talk .19s ease-in-out infinite alternate;
