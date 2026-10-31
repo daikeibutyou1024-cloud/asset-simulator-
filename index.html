@@ -467,7 +467,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  </section>
 
  <section id="content" class="page hidden">
-  <div class="heading"><div><div class="kicker">CONTENT STUDIO / 003</div><h2>コンテンツ制作</h2><div class="sub">動画や記事の制作指示をまとめます。</div></div></div>
+  <div class="heading"><div><div class="kicker">CONTENT STUDIO / 003</div><h2>② 台本・動画制作</h2><div class="sub">動画や記事の制作指示をまとめます。</div></div></div>
   <div class="panel form-panel">
    <div class="field"><label for="platform">制作媒体</label><select id="platform"><option>YouTubeショート</option><option>Instagramリール</option><option>note記事</option><option>YouTube動画</option></select></div>
    <div class="field"><label for="topic">テーマ・商品</label><input id="topic" placeholder="例：副業初心者におすすめのAIツール3選"></div>
@@ -537,7 +537,7 @@ function log(message){
 function showPage(id){
  pages.forEach(p=>p.classList.toggle("hidden",p.id!==id));
  window.scrollTo({top:0,behavior:"smooth"});
- if(id!=="dashboard")log(({research:"商品リサーチ画面を開きました",content:"コンテンツ制作画面を開きました",analytics:"収益分析画面を開きました",settings:"システム設定画面を開きました"})[id]||"司令室を表示しました");
+ if(id!=="dashboard")log(({research:"商品リサーチ画面を開きました",content:"② 台本・動画制作画面を開きました",analytics:"収益分析画面を開きました",settings:"システム設定画面を開きました"})[id]||"司令室を表示しました");
 }
 navButtons.forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
 
@@ -571,7 +571,7 @@ function makeContent(){
  const topic=$("topic").value.trim()||"AI・副業の初心者向けテーマ";
  const tone=$("tone").value.trim()||"具体例、メリット、デメリット、注意点を公平に説明する";
  $("content-output").textContent=
-`あなたはアフィリエイトコンテンツ制作担当です。
+`あなたはアフィリエイト② 台本・動画制作担当です。
 
 【媒体】${platform}
 【テーマ】${topic}
@@ -588,7 +588,7 @@ function makeContent(){
 8. 投稿文と関連ハッシュタグ
 
 未確認の体験談や収益実績を捏造しないでください。広告・アフィリエイトであることを適切に明示し、誇大な収益保証を避けてください。`;
- log("コンテンツ制作の指示文を作成しました");
+ log("② 台本・動画制作の指示文を作成しました");
 }
 $("make-content").addEventListener("click",makeContent);
 
