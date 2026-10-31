@@ -708,8 +708,8 @@ $("orb-voice").addEventListener("keydown",event=>{
 });
 
 const staffLines={
- sachi:"はい、サチです。動画の企画から台本、画像、音声、サムネイル、動画制作まで担当します。",
- musashi:"ワン！ムサシです。司令室のサポートはお任せください。"
+ sachi:"はい、サチです。今は仕事中です。ムサシに邪魔されないように、集中して進めますね。",
+ musashi:"ワン！サチ、また仕事？その台本ぜんぜん面白くないワン！僕がチェックしてあげるワン！……えっ、勝手に触るなって？怒った怒った！ワンワン！"
 };
 function chooseJapaneseVoice(voices, gender){
  const ja=voices.filter(v=>/^ja(-|_)/i.test(v.lang));
@@ -733,7 +733,7 @@ function speakStaff(id){
  }
  stopStaffMouths();
  const portrait=document.querySelector('[data-staff="'+id+'"]')?.closest(".staff-card")?.querySelector(".staff-portrait");
- const female=id==="luna"||id==="emma";
+ const female=id==="sachi";
  const voices=window.speechSynthesis.getVoices();
  const selected=chooseJapaneseVoice(voices,female?"female":"male");
  const utterance=new SpeechSynthesisUtterance(staffLines[id]||"こんにちは。");
