@@ -389,17 +389,29 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 
    <div class="right-stack">
     <div class="panel">
-     <div class="panel-title"><h3>LUNA MEDIA STUDIO</h3><span>SOLE CREATIVE PARTNER</span></div>
-     <div class="agent-roster" style="grid-template-columns:1fr">
+     <div class="panel-title"><h3>AI CREATIVE TEAM</h3><span>J.A.R.V.I.S. COMMAND STAFF</span></div>
+     <div class="agent-roster" style="grid-template-columns:repeat(2,minmax(0,1fr))">
       <article class="staff-card">
-       <div class="staff-portrait" style="height:210px"><span class="staff-tag">AI VIDEO CREATOR</span>
-        <span class="staff-face" style="--mouth-x:56%;--mouth-y:69%;--mouth-w:16px"><img class="staff-photo" src="luna.jpg" alt="LUNA 女性アバター"></span>
+       <div class="staff-portrait" style="height:210px"><span class="staff-tag">VIDEO CREATOR</span>
+        <span class="staff-face" style="--mouth-x:56%;--mouth-y:69%;--mouth-w:16px"><img class="staff-photo" src="luna.jpg" alt="SACHI 女性アバター"></span>
        </div>
        <div class="staff-info">
-        <div class="staff-name">LUNA <span style="color:#8bdfff">ルナ</span></div>
-        <button class="staff-speak" type="button" data-staff="luna" aria-label="LUNAの声を聞く">🔊 話す</button>
-        <div class="staff-role">唯一の動画制作パートナー</div>
-        <div class="staff-desc">企画・リサーチ・台本・画像・音声・サムネイル・動画制作を担当</div>
+        <div class="staff-name">SACHI <span style="color:#8bdfff">サチ</span></div>
+        <button class="staff-speak" type="button" data-staff="sachi" aria-label="SACHIの声を聞く">🔊 話す</button>
+        <div class="staff-role">動画制作担当</div>
+        <div class="staff-desc">企画・リサーチ・台本・画像・音声・サムネイル・動画制作</div>
+        <div class="staff-status"><i></i>待機中</div>
+       </div>
+      </article>
+      <article class="staff-card">
+       <div class="staff-portrait" style="height:210px"><span class="staff-tag">AI ASSISTANT</span>
+        <span class="staff-face"><img class="staff-photo" src="musashi.svg" alt="ムサシ チワワ"></span>
+       </div>
+       <div class="staff-info">
+        <div class="staff-name">MUSASHI <span style="color:#8bdfff">ムサシ</span></div>
+        <button class="staff-speak" type="button" data-staff="musashi" aria-label="ムサシの声を聞く">🔊 話す</button>
+        <div class="staff-role">チワワ型AIアシスタント</div>
+        <div class="staff-desc">司令室のサポート・確認・お知らせ担当</div>
         <div class="staff-status"><i></i>待機中</div>
        </div>
       </article>
@@ -696,7 +708,8 @@ $("orb-voice").addEventListener("keydown",event=>{
 });
 
 const staffLines={
- luna:"はい、ルナです。J.A.R.V.I.S.からの指令を受けて、企画から動画完成まで担当します。どんな動画を作りましょうか？"
+ sachi:"はい、サチです。動画の企画から台本、画像、音声、サムネイル、動画制作まで担当します。",
+ musashi:"ワン！ムサシです。司令室のサポートはお任せください。"
 };
 function chooseJapaneseVoice(voices, gender){
  const ja=voices.filter(v=>/^ja(-|_)/i.test(v.lang));
