@@ -16,12 +16,38 @@
 const $=id=>document.getElementById(id);let videoUrl=null;let avatarImage=null;let speechActive=false;let narrationAudio=null;let audioObjectUrl=null;
 function setSpeaking(on){speechActive=on;$("previewAvatar").style.transform=on?"scale(1.02)":"scale(1)";}
 const avatarDB=new Promise((resolve,reject)=>{const req=indexedDB.open("sachi-video-studio",1);req.onupgradeneeded=()=>req.result.createObjectStore("settings");req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
-async function showAvatar(blob){const u=URL.createObjectURL(blob);const img=new Image();img.onload=()=>{avatarImage=img;$("portrait").style.backgroundImage='url("'+u+'")';$("portrait").style.backgroundSize="cover";$("portrait").style.backgroundPosition="center";$("portrait").textContent="";$("previewAvatar").style.backgroundImage='url("'+u+'")';$("previewAvatar").style.backgroundSize="cover";$("previewAvatar").style.backgroundPosition="center";$("previewAvatar").textContent="";};img.src=u;}
+async function showAvatar(blob){
+ const u=URL.createObjectURL(blob);
+ const img=new Image();
+ img.onload=()=>{
+  avatarImage=img;
+  for(const id of ["portrait","previewAvatar"]){
+   const box=$(id);
+   box.style.backgroundImage="none";
+   box.style.overflow="hidden";
+   box.textContent="";
+   const view=document.createElement("img");
+   view.src=u;
+   view.alt="SACHI";
+   view.style.cssText="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block";
+   box.appendChild(view);
+  }
+ };
+ img.onerror=()=>{URL.revokeObjectURL(u);$("voiceStatus").textContent="画像を表示できません。JPEGまたはPNG画像を選んでください。";};
+ img.src=u;
+}
 async function saveAvatar(blob){const db=await avatarDB;await new Promise((resolve,reject)=>{const tx=db.transaction("settings","readwrite");tx.objectStore("settings").put(blob,"avatar");tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
 (async()=>{try{const defaultImg=new Image();defaultImg.onload=()=>{avatarImage=defaultImg;$("portrait").style.backgroundImage='url("/IMG_4892.jpeg")';$("portrait").style.backgroundSize="cover";$("portrait").style.backgroundPosition="center";$("portrait").textContent="";$("previewAvatar").style.backgroundImage='url("/IMG_4892.jpeg")';$("previewAvatar").style.backgroundSize="cover";$("previewAvatar").style.backgroundPosition="center";$("previewAvatar").textContent="";};defaultImg.onerror=()=>{ $("portrait").textContent="S"; $("voiceStatus").textContent="サチ画像を読み込めません。画像ファイルの場所を確認してください。"; };defaultImg.src="/IMG_4892.jpeg";const db=await avatarDB;const blob=await new Promise((resolve,reject)=>{const req=db.transaction("settings").objectStore("settings").get("avatar");req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});if(blob)await showAvatar(blob);}catch(e){console.warn("SACHI画像の読み込みに失敗:",e);}})();
 (function receiveJarvisMission(){const params=new URLSearchParams(location.search);const command=params.get("command");if(!command)return;const box=$("jarvisMission");box.style.display="block";box.textContent="J.A.R.V.I.S.から制作指令を受信。SACHIが台本を自動生成しています…";$("topic").value=command;$("goal").selectedIndex=0;$("length").selectedIndex=0;$("notes").value="J.A.R.V.I.S.の制作指令：初心者向け。冒頭で興味を引き、具体例・メリット・注意点を入れる。誇大表現や未確認の収益実績は禁止。日本語で自然に、約60秒のYouTube Shortsとして制作。";history.replaceState({},document.title,location.pathname);setTimeout(()=>$("make").click(),350);})();
 $("audioFile").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(audioObjectUrl)URL.revokeObjectURL(audioObjectUrl);audioObjectUrl=URL.createObjectURL(f);narrationAudio=new Audio(audioObjectUrl);narrationAudio.preload="auto";$("voiceStatus").textContent="ナレーション音声を読み込みました。動画に合成できます。";});
-$("avatarFile").addEventListener("change",async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(!f.type.startsWith("image/")){alert("画像ファイルを選択してください。");return;}try{await saveAvatar(f);await showAvatar(f);$("voiceStatus").textContent="SACHI画像をこのブラウザに保存しました。次回も表示されます。";}catch(err){console.error(err);alert("画像を保存できませんでした。画像サイズを小さくして再度お試しください。");}});
+$("avatarFile").addEventListener("change",async e=>{
+ const f=e.target.files&&e.target.files[0];if(!f)return;
+ const looksLikeImage=(f.type&&f.type.startsWith("image/"))||/\\.(jpe?g|png|webp|gif|heic|heif)$/i.test(f.name||"");
+ if(!looksLikeImage){$("voiceStatus").textContent="画像ファイルを選択してください。";return;}
+ $("voiceStatus").textContent="画像を読み込み中...";
+ try{await showAvatar(f);await saveAvatar(f);$("voiceStatus").textContent="画像を反映・保存しました。次回もこのブラウザで表示されます。";}
+ catch(err){console.error(err);$("voiceStatus").textContent="画像を保存できませんでした。JPEGまたはPNGで再度お試しください。";}
+});
 $("make").addEventListener("click",async()=>{const topic=$("topic").value.trim();if(!topic){$("status").textContent="先に動画テーマを入力してください。";$("topic").focus();return;}let password=localStorage.getItem("jarvis_access_password");if(!password){password=prompt("J.A.R.V.I.S.のアクセス用パスワードを入力してください");if(!password)return;localStorage.setItem("jarvis_access_password",password);}
 const promptText=`あなたはYouTubeチャンネル「SACHIのAIマネーラボ」の企画・脚本チームです。テーマ：${topic}。目的：${$("goal").value}。尺：${$("length").value}。追加条件：${$("notes").value||"特になし"}。サチは明るく聞き取りやすい声で、テンポよく解説する女性AIプレゼンターです。日本の初心者向けに自然な話し言葉で書き、冒頭で興味を引き、具体例と注意点を入れてください。未確認の料金・報酬・実績・口コミは捏造しないでください。出力順：1.タイトル案3つ 2.採用タイトル 3.冒頭フック 4.場面ごとの映像指示 5.そのまま読み上げられるナレーション台本（見出しや演出指示を混ぜない独立した本文） 6.字幕用の短文 7.YouTube投稿情報 8.事実確認事項。投稿情報は必ず次の3つの見出しを一字一句そのまま使い、各見出しの次の行に内容だけを書いてください：【採用タイトル】（100文字以内）【概要欄】（説明文とCTA）【タグ】（#付きハッシュタグを5〜10個）。ナレーション本文は必ず「【ナレーション本文】」と「【ナレーション終了】」で囲み、その間には読み上げる文章だけを入れてください。台本は指定尺に合わせてください。`;
 $("make").disabled=true;$("status").textContent="Claudeに企画・台本を依頼中...";$("script").value="生成中です...";
