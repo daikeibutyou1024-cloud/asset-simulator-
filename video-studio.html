@@ -68,7 +68,9 @@ $("renderWithVoice").addEventListener("click",async()=>{
    requestAnimationFrame(draw);
   }
   rec.start();draw();$("renderStatus").textContent="LUNAが読み上げ中です。録画しています...";
-  const ja=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith("ja"));\n  const speakNext=()=>{if(index>=lines.length){setSpeaking(false);active=false;setTimeout(()=>{if(rec&&rec.state!=="inactive")rec.stop();},700);return;}const utter=new SpeechSynthesisUtterance(lines[index]);utter.lang="ja-JP";utter.rate=1;utter.pitch=1.08;if(ja[0])utter.voice=ja[0];utter.onstart=()=>setSpeaking(true);utter.onend=()=>{index++;speakNext();};utter.onerror=()=>{setSpeaking(false);active=false;if(rec&&rec.state!=="inactive")rec.stop();};speechSynthesis.speak(utter);};\n  speechSynthesis.cancel();speakNext();
+  const ja=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith("ja"));
+  const speakNext=()=>{if(index>=lines.length){setSpeaking(false);active=false;setTimeout(()=>{if(rec&&rec.state!=="inactive")rec.stop();},700);return;}const utter=new SpeechSynthesisUtterance(lines[index]);utter.lang="ja-JP";utter.rate=1;utter.pitch=1.08;if(ja[0])utter.voice=ja[0];utter.onstart=()=>setSpeaking(true);utter.onend=()=>{index++;speakNext();};utter.onerror=()=>{setSpeaking(false);active=false;if(rec&&rec.state!=="inactive")rec.stop();};speechSynthesis.speak(utter);};
+  speechSynthesis.cancel();speakNext();
   await stopped;
   const blob=new Blob(chunks,{type:"video/webm"});if(videoUrl)URL.revokeObjectURL(videoUrl);videoUrl=URL.createObjectURL(blob);
   $("download").disabled=false;$("renderStatus").textContent="音声付きWebM動画を作成しました。保存ボタンからダウンロードできます。";
