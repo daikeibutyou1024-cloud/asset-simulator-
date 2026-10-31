@@ -313,27 +313,28 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 .staff-speak:active{transform:scale(.98)}
 .staff-speak:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 
-/* 音声再生中の簡易リップシンク */
-.staff-mouth{
- position:absolute;z-index:3;
- left:var(--mouth-x,50%);top:var(--mouth-y,78%);
- width:var(--mouth-w,13px);height:4px;
- transform:translate(-50%,-50%);
- border-radius:50%;background:#743b43;opacity:0;
- box-shadow:0 1px 1px #2a1018;
- pointer-events:none;
+/* 写真と同じ表示領域に口元レイヤーを重ねる */
+.staff-face{
+ position:relative;display:block;flex:none;
+ height:100%;aspect-ratio:283 / 168;width:auto;max-width:100%;
 }
-/* 顔写真ごとに口元の位置を個別調整 */
-.staff-card:nth-child(1) .staff-portrait{--mouth-x:50%;--mouth-y:77%;--mouth-w:13px}
-.staff-card:nth-child(2) .staff-portrait{--mouth-x:50%;--mouth-y:76%;--mouth-w:14px}
-.staff-card:nth-child(3) .staff-portrait{--mouth-x:50%;--mouth-y:78%;--mouth-w:13px}
-.staff-card:nth-child(4) .staff-portrait{--mouth-x:50%;--mouth-y:77%;--mouth-w:14px}
+.staff-face .staff-photo{
+ position:absolute;inset:0;width:100%;height:100%;
+ object-fit:fill;object-position:center;z-index:1;
+}
+.staff-face .staff-mouth{
+ position:absolute;z-index:3;left:var(--mouth-x);top:var(--mouth-y);
+ width:var(--mouth-w);height:3px;transform:translate(-50%,-50%);
+ border-radius:50% 50% 45% 45%;background:#743b43;
+ box-shadow:0 1px 2px #2a1018;opacity:0;pointer-events:none;
+}
 .staff-portrait.speaking .staff-mouth{
- opacity:.95;
- animation:mouth-talk .19s ease-in-out infinite alternate;
+ opacity:.92;animation:mouth-talk .16s ease-in-out infinite alternate;
 }
 @keyframes mouth-talk{
- from{height:3px;transform:translateX(-50%) scaleX(.8) scaleY(.65)}
+ from{height:2px;transform:translate(-50%,-50%) scaleY(.7) scaleX(.92)}
+ to{height:9px;transform:translate(-50%,-50%) scaleY(1) scaleX(1.08)}
+}
  to{height:9px;transform:translateX(-50%) scaleX(1.05) scaleY(1)}
 }
 
@@ -392,22 +393,22 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
      <div class="agent-roster">
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">CREATIVE DIRECTOR</span>
-        <img class="staff-photo" src="luna.jpg" alt="LUNA 女性アバター"><span class="staff-mouth" aria-hidden="true"></span>
+        <span class="staff-face" style="--mouth-x:56%;--mouth-y:69%;--mouth-w:16px"><img class="staff-photo" src="luna.jpg" alt="LUNA 女性アバター"><span class="staff-mouth" aria-hidden="true"></span></span>
        </div><div class="staff-info"><div class="staff-name">LUNA <span style="color:#8bdfff">ルナ</span></div><button class="staff-speak" type="button" data-staff="luna" aria-label="lunaの声を聞く">🔊 話す</button><div class="staff-role">動画制作・SNS担当</div><div class="staff-desc">商品紹介、台本、動画企画、SNSコンテンツ制作</div><div class="staff-status"><i></i>待機中</div></div>
       </article>
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">INVESTMENT ANALYST</span>
-        <img class="staff-photo" src="leon.jpg" alt="LEON 男性アバター"><span class="staff-mouth" aria-hidden="true"></span>
+        <span class="staff-face" style="--mouth-x:55%;--mouth-y:68%;--mouth-w:17px"><img class="staff-photo" src="leon.jpg" alt="LEON 男性アバター"><span class="staff-mouth" aria-hidden="true"></span></span>
        </div><div class="staff-info"><div class="staff-name">LEON <span style="color:#8bdfff">レオン</span></div><button class="staff-speak" type="button" data-staff="leon" aria-label="leonの声を聞く">🔊 話す</button><div class="staff-role">投資・金融担当</div><div class="staff-desc">BTC・ETH・株式、市場動向、資産分析</div><div class="staff-status"><i></i>待機中</div></div>
       </article>
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">PRODUCT RESEARCH</span>
-        <img class="staff-photo" src="emma.jpg" alt="EMMA 女性アバター"><span class="staff-mouth" aria-hidden="true"></span>
+        <span class="staff-face" style="--mouth-x:54%;--mouth-y:69%;--mouth-w:16px"><img class="staff-photo" src="emma.jpg" alt="EMMA 女性アバター"><span class="staff-mouth" aria-hidden="true"></span></span>
        </div><div class="staff-info"><div class="staff-name">EMMA <span style="color:#8bdfff">エマ</span></div><button class="staff-speak" type="button" data-staff="emma" aria-label="emmaの声を聞く">🔊 話す</button><div class="staff-role">物販・リサーチ担当</div><div class="staff-desc">売れる商品の発掘、価格比較、競合・案件調査</div><div class="staff-status"><i></i>待機中</div></div>
       </article>
       <article class="staff-card">
        <div class="staff-portrait"><span class="staff-tag">BUSINESS STRATEGIST</span>
-        <img class="staff-photo" src="noah.jpg" alt="NOAH 男性アバター"><span class="staff-mouth" aria-hidden="true"></span>
+        <span class="staff-face" style="--mouth-x:56%;--mouth-y:69%;--mouth-w:17px"><img class="staff-photo" src="noah.jpg" alt="NOAH 男性アバター"><span class="staff-mouth" aria-hidden="true"></span></span>
        </div><div class="staff-info"><div class="staff-name">NOAH <span style="color:#8bdfff">ノア</span></div><button class="staff-speak" type="button" data-staff="noah" aria-label="noahの声を聞く">🔊 話す</button><div class="staff-role">経営・収益分析担当</div><div class="staff-desc">売上・利益、事業計画、KPI、改善提案</div><div class="staff-status"><i></i>待機中</div></div>
       </article>
      </div>
