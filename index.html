@@ -358,7 +358,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
    <div>
     <div class="kicker">SYSTEM OVERVIEW / 001</div>
     <h2>YOUTUBE PRODUCTION COMMAND CENTER</h2>
-    <div class="sub">LUNAのAIマネーラボ｜YouTube企画・制作・投稿・収益管理</div>
+    <div class="sub">SACHIのAIマネーラボ｜YouTube企画・制作・投稿・収益管理</div>
    </div>
    <div class="demo">デモ画面・実績データ未接続</div>
   </div>
@@ -421,10 +421,10 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
      <div class="panel-title"><h3>YOUTUBE WORKFLOW</h3><span>ONE CHANNEL / ONE MISSION</span></div>
      <div class="quick-grid">
       <button class="quick" data-page="research"><div class="quick-icon">⌕</div><strong>YouTubeテーマリサーチ</strong><small>視聴者の悩み・検索テーマ・競合を調査</small></button>
-      <button class="quick" data-page="content"><div class="quick-icon">✎</div><strong>LUNA動画企画・台本</strong><small>Shorts・通常動画の台本を制作</small></button>
+      <button class="quick" data-page="content"><div class="quick-icon">✎</div><strong>SACHI動画企画・台本</strong><small>Shorts・通常動画の台本を制作</small></button>
       <button class="quick" data-page="analytics"><div class="quick-icon">▥</div><strong>チャンネル分析</strong><small>再生・維持率・クリック・成果</small></button>
       <button class="quick" data-page="settings"><div class="quick-icon">⚙</div><strong>チャンネル運用設定</strong><small>チャンネル方針と制作ルールを管理</small></button>
-      <button class="quick" onclick="location.href='video-studio.html?from=jarvis&command='+encodeURIComponent('AI・副業・お金の初心者向けAI活用：最初の一歩')"><div class="quick-icon">🎬</div><strong>J.A.R.V.I.S. → LUNA制作指令</strong><small>司令室からLUNAへ動画制作を依頼</small></button>
+      <button class="quick" onclick="location.href='video-studio.html?from=jarvis&command='+encodeURIComponent('AI・副業・お金の初心者向けAI活用：最初の一歩')"><div class="quick-icon">🎬</div><strong>J.A.R.V.I.S. → SACHI制作指令</strong><small>司令室からSACHIへ動画制作を依頼</small></button>
      </div>
     </div>
    </div>
@@ -448,7 +448,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
     <div class="panel-title"><h3>MISSION STATUS</h3><span>PROJECT PLAN</span></div>
     <div class="agent-list">
      <div class="agent"><div class="agent-icon">01</div><div class="agent-info"><strong>① 企画・リサーチ</strong><small>視聴者の悩み・検索テーマ・競合を調査</small></div><span class="state">準備</span></div>
-     <div class="agent"><div class="agent-icon">02</div><div class="agent-info"><strong>② 動画制作</strong><small>LUNAの台本・音声・映像・MP4</small></div><span class="state">準備</span></div>
+     <div class="agent"><div class="agent-icon">02</div><div class="agent-info"><strong>② 動画制作</strong><small>SACHIの台本・音声・映像・MP4</small></div><span class="state">準備</span></div>
      <div class="agent"><div class="agent-icon">03</div><div class="agent-info"><strong>③ 投稿・分析</strong><small>YouTube投稿・視聴データ・収益分析</small></div><span class="state">未接続</span></div>
     </div>
    </div>
@@ -471,7 +471,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  </section>
 
  <section id="content" class="page hidden">
-  <div class="heading"><div><div class="kicker">YOUTUBE SCRIPT STUDIO / 003</div><h2>動画企画・台本</h2><div class="sub">LUNAが出演するYouTube動画の企画と台本を作ります。</div></div></div>
+  <div class="heading"><div><div class="kicker">YOUTUBE SCRIPT STUDIO / 003</div><h2>動画企画・台本</h2><div class="sub">SACHIが出演するYouTube動画の企画と台本を作ります。</div></div></div>
   <div class="panel form-panel">
    <div class="field"><label for="platform">制作媒体</label><select id="platform"><option>YouTubeショート</option><option>Instagramリール</option><option>note記事</option><option>YouTube動画</option></select></div>
    <div class="field"><label for="topic">テーマ・商品</label><input id="topic" placeholder="例：副業初心者におすすめのAIツール3選"></div>
@@ -550,7 +550,7 @@ function makeResearch(){
  const audience=$("audience").value.trim()||"副業初心者";
  const criteria=$("criteria").value.trim()||"無料で始められること、公式紹介制度があること";
  $("research-output").textContent=
-`あなたはYouTubeチャンネル「LUNAのAIマネーラボ」のリサーチ担当です。
+`あなたはYouTubeチャンネル「SACHIのAIマネーラボ」のリサーチ担当です。
 
 【ジャンル】${genre}
 【想定視聴者】${audience}
@@ -575,7 +575,7 @@ function makeContent(){
  const topic=$("topic").value.trim()||"AI・副業の初心者向けテーマ";
  const tone=$("tone").value.trim()||"具体例、メリット、デメリット、注意点を公平に説明する";
  $("content-output").textContent=
-`あなたは「LUNAのAIマネーラボ」のYouTube台本担当です。LUNAが画面に登場して話す前提で作成してください。
+`あなたは「SACHIのAIマネーラボ」のYouTube台本担当です。SACHIが画面に登場して話す前提で作成してください。
 
 【YouTube動画形式】${platform}
 【テーマ】${topic}
