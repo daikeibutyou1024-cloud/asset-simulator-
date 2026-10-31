@@ -281,7 +281,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 .staff-card{overflow:hidden;border:1px solid #24516d;border-radius:12px;background:linear-gradient(155deg,#0b2036,#06101f);min-width:0}
 .staff-portrait{height:142px;position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 75%,#225078 0%,#10253d 48%,#071323 100%)}
 .staff-portrait:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#06101f 100%)}
-.staff-portrait svg,.staff-portrait .staff-photo{height:158px;width:100%;max-width:170px;position:relative;z-index:1;object-fit:cover;object-position:center 28%;filter:drop-shadow(0 7px 12px #0009)}
+.staff-portrait svg,.staff-portrait .staff-photo{position:absolute;inset:0;width:100%;height:100%;max-width:none;z-index:1;object-fit:cover;object-position:center 28%;filter:drop-shadow(0 7px 12px #0009)}
 .staff-tag{position:absolute;z-index:2;top:9px;left:9px;padding:4px 7px;border:1px solid #7bdfff55;border-radius:20px;background:#041322bb;color:#a8edff;font-size:8px;letter-spacing:1px}
 .staff-info{padding:10px 11px 12px}
 .staff-name{font-size:13px;font-weight:700;letter-spacing:.5px}
@@ -290,7 +290,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 .staff-status{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:9px;color:#8fffd0}
 .staff-status i{width:6px;height:6px;border-radius:50%;background:#58ffc2;box-shadow:0 0 8px #58ffc2}
 .agent-roster-wrap{margin-top:2px}
-@media(max-width:700px){.agent-roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.staff-portrait{height:125px}.staff-portrait svg,.staff-portrait .staff-photo{height:145px}.staff-info{padding:9px}}
+@media(max-width:700px){.agent-roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.staff-portrait{height:125px}.staff-info{padding:9px}}
 
 
 /* プロフィールをスタジオ撮影風に見せる */
@@ -304,9 +304,8 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  border-radius:9px 9px 0 0;z-index:1;pointer-events:none;
 }
 .staff-portrait svg,.staff-portrait .staff-photo{
- height:166px;max-width:184px;object-fit:cover;object-position:center 28%;
+ width:100%;height:100%;max-width:none;object-fit:cover;object-position:center 28%;
  filter:drop-shadow(0 10px 18px #000b) drop-shadow(0 0 8px #46caff30);
- transform:scale(1.04);transform-origin:50% 100%;
 }
 .staff-card{box-shadow:0 8px 24px #0005,inset 0 1px #b9efff12}
 .staff-card:hover{border-color:#57eaff88;box-shadow:0 0 22px #168cff24}
