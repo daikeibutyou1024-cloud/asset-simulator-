@@ -22,7 +22,7 @@ async function saveAvatar(blob){const db=await avatarDB;await new Promise((resol
 (function receiveJarvisMission(){const params=new URLSearchParams(location.search);const command=params.get("command");if(!command)return;const box=$("jarvisMission");box.style.display="block";box.textContent="J.A.R.V.I.S.から制作指令を受信。LUNAが台本を自動生成しています…";$("topic").value=command;$("goal").selectedIndex=0;$("length").selectedIndex=0;$("notes").value="J.A.R.V.I.S.の制作指令：初心者向け。冒頭で興味を引き、具体例・メリット・注意点を入れる。誇大表現や未確認の収益実績は禁止。日本語で自然に、約60秒のYouTube Shortsとして制作。";history.replaceState({},document.title,location.pathname);setTimeout(()=>$("make").click(),350);})();
 $("avatarFile").addEventListener("change",async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(!f.type.startsWith("image/")){alert("画像ファイルを選択してください。");return;}try{await saveAvatar(f);await showAvatar(f);$("voiceStatus").textContent="LUNA画像をこのブラウザに保存しました。次回も表示されます。";}catch(err){console.error(err);alert("画像を保存できませんでした。画像サイズを小さくして再度お試しください。");}});
 $("make").addEventListener("click",async()=>{const topic=$("topic").value.trim();if(!topic){$("status").textContent="先に動画テーマを入力してください。";$("topic").focus();return;}let password=localStorage.getItem("jarvis_access_password");if(!password){password=prompt("J.A.R.V.I.S.のアクセス用パスワードを入力してください");if(!password)return;localStorage.setItem("jarvis_access_password",password);}
-const promptText=`あなたはYouTubeチャンネル「LUNAのAIマネーラボ」の企画・脚本チームです。テーマ：${topic}。目的：${$("goal").value}。尺：${$("length").value}。追加条件：${$("notes").value||"特になし"}。LUNAは明るく親しみやすく誠実な女性AIプレゼンターです。日本の初心者向けに自然な話し言葉で書き、冒頭で興味を引き、具体例と注意点を入れてください。未確認の料金・報酬・実績・口コミは捏造しないでください。出力順：1.タイトル案3つ 2.採用タイトル 3.冒頭フック 4.場面ごとの映像指示 5.そのまま読み上げられるナレーション台本（見出しや演出指示を混ぜない独立した本文） 6.字幕用の短文 7.概要欄とCTA 8.事実確認事項。ナレーション本文は必ず「【ナレーション本文】」と「【ナレーション終了】」で囲み、その間には読み上げる文章だけを入れてください。台本は指定尺に合わせてください。`;
+const promptText=`あなたはYouTubeチャンネル「LUNAのAIマネーラボ」の企画・脚本チームです。テーマ：${topic}。目的：${$("goal").value}。尺：${$("length").value}。追加条件：${$("notes").value||"特になし"}。LUNAは明るく親しみやすく誠実な女性AIプレゼンターです。日本の初心者向けに自然な話し言葉で書き、冒頭で興味を引き、具体例と注意点を入れてください。未確認の料金・報酬・実績・口コミは捏造しないでください。出力順：1.タイトル案3つ 2.採用タイトル 3.冒頭フック 4.場面ごとの映像指示 5.そのまま読み上げられるナレーション台本（見出しや演出指示を混ぜない独立した本文） 6.字幕用の短文 7.YouTube投稿情報 8.事実確認事項。投稿情報は必ず次の3つの見出しを一字一句そのまま使い、各見出しの次の行に内容だけを書いてください：【採用タイトル】（100文字以内）【概要欄】（説明文とCTA）【タグ】（#付きハッシュタグを5〜10個）。ナレーション本文は必ず「【ナレーション本文】」と「【ナレーション終了】」で囲み、その間には読み上げる文章だけを入れてください。台本は指定尺に合わせてください。`;
 $("make").disabled=true;$("status").textContent="Claudeに企画・台本を依頼中...";$("script").value="生成中です...";
 try{const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json","x-jarvis-password":password},body:JSON.stringify({prompt:promptText})});const data=await res.json();if(res.status===401){localStorage.removeItem("jarvis_access_password");throw new Error("アクセス用パスワードが違います。再度お試しください。");}if(!res.ok)throw new Error(data.detail||data.error||"生成に失敗しました");$("script").value=data.answer||"";fillPostingInfo(data.answer||"",topic);$("status").textContent="台本ができました。タイトル・概要欄・タグも自動入力しました。内容を確認・編集してから動画を書き出してください。";}catch(e){$("script").value="";$("status").textContent="エラー："+e.message;}finally{$("make").disabled=false;}});
 $("copyScript").addEventListener("click",async()=>{const t=$("script").value;if(!t){$("status").textContent="コピーする台本がありません。";return;}try{await navigator.clipboard.writeText(t);$("status").textContent="台本をコピーしました。";}catch(e){$("script").select();document.execCommand("copy");$("status").textContent="台本をコピーしました。";}});
@@ -30,24 +30,29 @@ function stopVoice(){if("speechSynthesis"in window)speechSynthesis.cancel();setS
 $("speak").addEventListener("click",()=>{const t=getNarrationText();if(!t){$("voiceStatus").textContent="先に台本を生成または入力してください。";return;}if(!("speechSynthesis"in window)){$("voiceStatus").textContent="このブラウザは音声読み上げに対応していません。";return;}stopVoice();const u=new SpeechSynthesisUtterance(t);u.lang="ja-JP";u.rate=1;u.pitch=1.08;const v=speechSynthesis.getVoices().filter(x=>x.lang&&x.lang.toLowerCase().startsWith("ja"));if(v[0])u.voice=v[0];u.onstart=()=>{setSpeaking(true);$("voiceStatus").textContent="LUNAの読み上げ中...";};u.onend=()=>{setSpeaking(false);$("voiceStatus").textContent="読み上げ完了";};u.onerror=()=>{setSpeaking(false);$("voiceStatus").textContent="音声再生に失敗しました";};speechSynthesis.speak(u);});
 $("stopSpeak").addEventListener("click",stopVoice);
 function extractSection(text,labels){
+ const lines=text.split(/\r?\n/);
  for(const label of labels){
-  const at=text.indexOf(label);
-  if(at<0)continue;
-  let value=text.slice(at+label.length).replace(/^\\s*[：:]?\\s*/,"");
-  const end=value.search(/\\n\\s*(?:【|[0-9０-９]+[.．、)]|タイトル|概要欄|タグ)/);
-  if(end>=0)value=value.slice(0,end);
-  if(value.trim())return value.trim();
+  const i=lines.findIndex(line=>line.trim().replace(/[：:]$/,"")===label);
+  if(i<0)continue;
+  const out=[];
+  for(let j=i+1;j<lines.length;j++){
+   const line=lines[j].trim();
+   if(/^【[^】]+】$/.test(line))break;
+   out.push(lines[j]);
+  }
+  const value=out.join("\n").trim();
+  if(value)return value;
  }
  return "";
 }
 function fillPostingInfo(text,topic){
- const titleBlock=extractSection(text,["採用タイトル","採用タイトル：","タイトル"]);
- const title=(titleBlock.split("\\n").map(x=>x.replace(/^[-・*0-9０-９.．、)]+\\s*/,"").trim()).find(Boolean)||topic).replace(/[「」【】]/g,"").slice(0,100);
+ const titleBlock=extractSection(text,["採用タイトル"]);
+ const title=(titleBlock.split(/\r?\n/).map(x=>x.replace(/^[-・*0-9０-９.．、)]+\s*/,"").trim()).find(Boolean)||topic).replace(/[「」【】]/g,"").slice(0,100);
  $("videoTitle").value=title;$("previewTitle").textContent=title;
  const desc=extractSection(text,["概要欄","YouTube概要欄","説明文"]);
- $("videoDescription").value=desc||topic+"について、初心者向けにポイントと注意点を解説します。\\n\\n※最新情報は公式サイトをご確認ください。";
- const tagBlock=extractSection(text,["ハッシュタグ","タグ"]);
- const tags=(tagBlock.match(/#[^\\s#]+/g)||[]).join(",")||"AI,副業,お金,初心者,YouTubeショート";
+ $("videoDescription").value=desc||topic+"について、初心者向けにポイントと注意点を解説します。\n\n※最新情報は公式サイトをご確認ください。";
+ const tagBlock=extractSection(text,["タグ","ハッシュタグ"]);
+ const tags=(tagBlock.match(/#[^\s#]+/g)||[]).join(",")||"AI,副業,お金,初心者,YouTubeショート";
  $("videoTags").value=tags;
 }
 function getNarrationText(){const s=$("script").value.trim();const a=s.indexOf("【ナレーション本文】");if(a<0)return s;const start=a+"【ナレーション本文】".length;const b=s.indexOf("【ナレーション終了】",start);return s.slice(start,b<0?undefined:b).trim()||s;}
@@ -103,6 +108,6 @@ $("renderWithVoice").addEventListener("click",async()=>{
  }catch(e){speechSynthesis.cancel();$("renderStatus").textContent="音声付き録画エラー："+e.message;}
  finally{if(capture)capture.getTracks().forEach(t=>t.stop());if(canvasStream)canvasStream.getTracks().forEach(t=>t.stop());setSpeaking(false);$("renderWithVoice").disabled=false;$("render").disabled=false;}
 });
-$("download").addEventListener("click",()=>{if(!videoUrl)return;const a=document.createElement("a");a.href=videoUrl;a.download="luna-youtube-video.webm";document.body.appendChild(a);a.click();a.remove();});
+$("download").addEventListener("click",()=>{if(!videoUrl)return;const a=document.createElement("a");a.href=videoUrl;const safeName=($("videoTitle").value.trim()||"luna-youtube-video").replace(/[\\/:*?"<>|]/g,"").replace(/\s+/g,"-").slice(0,60);a.download=safeName+".webm";document.body.appendChild(a);a.click();a.remove();});
 $("downloadMeta").addEventListener("click",()=>{const title=$("videoTitle").value.trim();const description=$("videoDescription").value.trim();const tags=$("videoTags").value.trim();if(!title&&!description&&!tags){$("renderStatus").textContent="タイトル・概要欄・タグのいずれかを入力してください。";return;}const text=["【YouTubeタイトル】",title,"","【概要欄】",description,"","【タグ】",tags,""].join("\n");const blob=new Blob([text],{type:"text/plain;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="luna-youtube-post-info.txt";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);$("renderStatus").textContent="YouTube投稿情報をテキストファイルで保存しました。"});
 </script></body></html>
