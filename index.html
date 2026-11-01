@@ -774,7 +774,10 @@ function speakAnswer(text){
 }
 
 function isSachiMission(text){
- return /(サチ|SACHI)/i.test(text) && /(台本|動画|制作)/.test(text) && /(作って|作成|お願い|依頼|指示|進めて|やって)/.test(text);
+ const asksToCreate=/(作って|作成|制作|作りたい|作成して|一本|1本|企画して|考えて|書いて|始めて|お願い|やって|作成を)/.test(text);
+ const mentionsVideo=/(動画|台本|ショート|Shorts|YouTube|リール|映像|ナレーション)/i.test(text);
+ const namesSachi=/(サチ|SACHI)/i.test(text);
+ return mentionsVideo && asksToCreate;
 }
 async function sendCommand(){
  const command=$("command").value.trim();
@@ -792,7 +795,7 @@ async function sendCommand(){
  $("send-command").disabled=true;
  try{
   const jarvisPrompt=sachiMission
-   ? "あなたはJ.A.R.V.I.S.です。ユーザーからSACHIへの制作指令を受けました。台本や動画そのものは今ここで生成せず、指令内容を整理してSACHIへ渡すための短い指令文を作成してください。ユーザーの明示的な別指示がない限り制作開始・API生成・動画書き出しは行いません。返答は、最初にSACHIからの受信返答を自然な日本語で一文、その後に【SACHI制作指令】と書き、次の行から指令内容を簡潔に記載してください。\n\nユーザーの指示："+command
+   ? "あなたはJ.A.R.V.I.S.です。これはSACHIへの動画制作ミッションです。あなた自身で台本や動画本文を生成してはいけません。依頼内容を整理した制作指令だけを返してください。SACHIは指令受信後すぐに台本生成を開始します。動画の書き出しはユーザーが台本を確認した後に手動で行います。返答には受付案内と【SACHI制作指令】を含めてください。\n\nユーザーの指示："+command
    : command;
   const response=await fetch("/api/chat",{
    method:"POST",
