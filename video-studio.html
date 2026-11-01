@@ -197,7 +197,7 @@ $("renderWithVoice").addEventListener("click",async()=>{
   const speakNext=()=>{if(index>=lines.length){setSpeaking(false);active=false;setTimeout(()=>{if(rec&&rec.state!=="inactive")rec.stop();},700);return;}const utter=new SpeechSynthesisUtterance(lines[index]);utter.lang="ja-JP";const style=getSachiVoiceStyle();utter.rate=style.rate;utter.pitch=style.pitch;const selectedVoice=getSelectedJapaneseVoice();if(selectedVoice)utter.voice=selectedVoice;utter.onstart=()=>setSpeaking(true);utter.onend=()=>{index++;speakNext();};utter.onerror=()=>{setSpeaking(false);active=false;if(rec&&rec.state!=="inactive")rec.stop();};speechSynthesis.speak(utter);};
   speechSynthesis.cancel();speakNext();
   await stopped;
-  const blob=new Blob(chunks,{type:"video/webm"});if(videoUrl)URL.revokeObjectURL(videoUrl);videoUrl=URL.createObjectURL(blob);await saveVideoToLibrary(blob,ext);$("renderedPreview").src=videoUrl;$("renderedPreview").style.display="block";$("renderedPreview").load();
+  const ext="webm";const blob=new Blob(chunks,{type:"video/webm"});if(videoUrl)URL.revokeObjectURL(videoUrl);videoUrl=URL.createObjectURL(blob);await saveVideoToLibrary(blob,ext);$("download").dataset.extension=ext;$("renderedPreview").src=videoUrl;$("renderedPreview").style.display="block";$("renderedPreview").load();
   $("download").disabled=false;$("renderStatus").textContent="音声付きWebM動画を作成しました。保存ボタンからダウンロードできます。";
  }catch(e){speechSynthesis.cancel();$("renderStatus").textContent="音声付き録画エラー："+e.message;}
  finally{if(capture)capture.getTracks().forEach(t=>t.stop());if(canvasStream)canvasStream.getTracks().forEach(t=>t.stop());setSpeaking(false);$("renderWithVoice").disabled=false;$("render").disabled=false;}
