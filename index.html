@@ -801,7 +801,7 @@ async function sendCommand(){
   $("response").textContent=result.answer||"回答を取得できませんでした。";
   if(command.startsWith("【SACHI制作指令】")){
    const link=document.createElement("a");
-   link.href="video-studio.html";
+   link.href="video-studio.html?command="+encodeURIComponent(command);
    link.textContent="▶ SACHI制作スタジオへ司令を渡す";
    link.style.cssText="display:inline-block;margin-top:14px;padding:11px 15px;border:1px solid #57eaff;border-radius:9px;color:#8feaff;text-decoration:none;font-weight:bold";
    $("response").appendChild(document.createElement("br"));
