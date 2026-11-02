@@ -202,7 +202,7 @@ $("renderWithVoice").addEventListener("click",async()=>{
  }catch(e){speechSynthesis.cancel();$("renderStatus").textContent="音声付き録画エラー："+e.message;}
  finally{if(capture)capture.getTracks().forEach(t=>t.stop());if(canvasStream)canvasStream.getTracks().forEach(t=>t.stop());setSpeaking(false);$("renderWithVoice").disabled=false;$("render").disabled=false;}
 });
-$("download").addEventListener("click",()=>{if(!videoUrl)return;const a=document.createElement("a");a.href=videoUrl;const safeName=($("videoTitle").value.trim()||"sachi-youtube-video").replace(/[\\/:*?"<>|]/g,"").replace(/\s+/g,"-").slice(0,60);a.download=safeName+"."+($("download").dataset.extension||"webm");document.body.appendChild(a);a.click();a.remove();});
+$("download").addEventListener("click",()=>{if(!videoUrl)return;const a=document.createElement("a");a.href=videoUrl;const safeName=($("videoTitle").value.trim()||"sachi-social-video").replace(/[\\/:*?"<>|]/g,"").replace(/\s+/g,"-").slice(0,60);a.download=safeName+"."+($("download").dataset.extension||"webm");document.body.appendChild(a);a.click();a.remove();});
 
 $("makeThumbnail").addEventListener("click",()=>{
  const c=document.createElement("canvas");c.width=1280;c.height=720;const x=c.getContext("2d");
