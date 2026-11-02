@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#030814">
-<title>J.A.R.V.I.S. — YouTube Production Command Center</title>
+<title>J.A.R.V.I.S. — AI Business Command Center</title>
 <style>
 :root{
   --bg:#030814;
@@ -338,13 +338,64 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  to{height:9px;transform:translateX(-50%) scaleX(1.05) scaleY(1)}
 }
 
+
+/* AI BUSINESS COMMAND CENTER redesign */
+.brand small{letter-spacing:2.4px}
+.dashboard{
+ grid-template-columns:minmax(205px,.72fr) minmax(410px,1.38fr) minmax(285px,.92fr);
+ gap:14px;align-items:stretch
+}
+.module-panel{grid-column:1;grid-row:1;display:flex;flex-direction:column;gap:4px}
+.core-panel{grid-column:2;grid-row:1}
+.right-stack{grid-column:3;grid-row:1;grid-template-rows:auto auto}
+.module-list{display:flex;flex-direction:column;gap:10px}
+.module-item{
+ display:flex;align-items:center;gap:9px;min-width:0;padding:12px 10px;
+ border:1px solid #19415b;border-radius:10px;
+ background:linear-gradient(120deg,#0a2036,#061322)
+}
+.module-icon{
+ width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;
+ border:1px solid #286181;border-radius:9px;color:var(--cyan);
+ background:#0c2a43;font-size:18px;text-shadow:0 0 10px #48dfff88
+}
+.module-copy{flex:1;min-width:0}
+.module-copy strong{display:block;font-size:10px;letter-spacing:1.2px}
+.module-copy small{display:block;margin-top:5px;color:var(--muted);font-size:9px;line-height:1.45}
+.module-state{font-size:8px;color:#ffd78a;white-space:nowrap}
+.module-state.ready{color:var(--green)}
+.module-note{
+ margin-top:auto;padding:11px 9px 2px;color:#6f91aa;font-size:9px;line-height:1.7;
+ border-top:1px solid #17364e
+}
+.core-panel{min-height:100%;display:flex;flex-direction:column;justify-content:center}
+.core-stage{min-height:300px}
+.metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.metric{background:linear-gradient(145deg,rgba(9,26,48,.96),rgba(4,13,28,.96))}
+.lower .panel{min-height:190px}
+@media(max-width:1150px){
+ .dashboard{grid-template-columns:minmax(190px,.72fr) minmax(0,1.28fr)}
+ .module-panel{grid-column:1;grid-row:2}
+ .core-panel{grid-column:1;grid-row:1}
+ .right-stack{grid-column:2;grid-row:1 / span 2}
+}
+@media(max-width:700px){
+ .dashboard{grid-template-columns:1fr}
+ .core-panel{grid-column:1;grid-row:1}
+ .module-panel{grid-column:1;grid-row:2}
+ .right-stack{grid-column:1;grid-row:3}
+ .core-stage{min-height:250px}
+ .module-item{padding:11px}
+ .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
 </style>
 </head>
 <body>
 <header class="topbar">
  <div class="brand">
   <div class="logo">◈</div>
-  <div><h1>J.A.R.V.I.S.</h1><small>YOUTUBE PRODUCTION COMMAND CENTER</small></div>
+  <div><h1>J.A.R.V.I.S.</h1><small>AI BUSINESS COMMAND CENTER</small></div>
  </div>
  <div class="top-right">
   <div class="clock" id="clock">--:--:--</div>
@@ -357,10 +408,10 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
   <div class="heading">
    <div>
     <div class="kicker">SYSTEM OVERVIEW / 001</div>
-    <h2>YOUTUBE PRODUCTION COMMAND CENTER</h2>
-    <div class="sub">SACHIのAIマネーラボ｜YouTube企画・制作・投稿・収益管理</div>
+    <h2>AI BUSINESS COMMAND CENTER</h2>
+    <div class="sub">AI経営司令室｜企画・制作・集客・分析・収益管理</div>
    </div>
-   <div class="demo">デモ画面・実績データ未接続</div>
+   <div class="demo">実績データ・外部自動連携は未接続</div>
   </div>
 
   <div class="dashboard">
@@ -387,6 +438,27 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
     <div class="response" id="response" aria-live="polite"></div>
    </div>
 
+   <div class="panel module-panel">
+    <div class="panel-title"><h3>AI BUSINESS UNITS</h3><span>担当モジュール</span></div>
+    <div class="module-list">
+     <div class="module-item">
+      <div class="module-icon">⌕</div><div class="module-copy"><strong>RESEARCH</strong><small>市場・競合・商品リサーチ</small></div><span class="module-state">設計中</span>
+     </div>
+     <div class="module-item">
+      <div class="module-icon">✎</div><div class="module-copy"><strong>CONTENT</strong><small>SACHI｜記事・動画制作</small></div><span class="module-state ready">制作環境あり</span>
+     </div>
+     <div class="module-item">
+      <div class="module-icon">◎</div><div class="module-copy"><strong>MARKETING</strong><small>SNS・集客・販売導線</small></div><span class="module-state">未接続</span>
+     </div>
+     <div class="module-item">
+      <div class="module-icon">▥</div><div class="module-copy"><strong>ANALYTICS</strong><small>アクセス・成果・改善分析</small></div><span class="module-state">手動入力</span>
+     </div>
+     <div class="module-item">
+      <div class="module-icon">￥</div><div class="module-copy"><strong>FINANCE</strong><small>売上・経費・利益管理</small></div><span class="module-state">手動入力</span>
+     </div>
+    </div>
+    <div class="module-note">※担当領域の表示です。未接続の機能は自動実行されません。</div>
+   </div>
    <div class="right-stack">
     <div class="panel">
      <div class="panel-title"><h3>AI CREATIVE TEAM</h3><span>J.A.R.V.I.S. COMMAND STAFF</span></div>
