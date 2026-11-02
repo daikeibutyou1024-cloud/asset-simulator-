@@ -847,7 +847,7 @@ function speakAnswer(text){
 
 function isSachiMission(text){
  const asksToCreate=/(作って|作成|制作|作りたい|作成して|一本|1本|企画して|考えて|書いて|始めて|お願い|やって|作成を)/.test(text);
- const mentionsVideo=/(動画|台本|ショート|Shorts|YouTube|リール|映像|ナレーション)/i.test(text);
+ const mentionsVideo=/(動画|台本|ショート|Shorts|リール|TikTok|Instagram|映像|ナレーション|投稿)/i.test(text);
  const namesSachi=/(サチ|SACHI)/i.test(text);
  return mentionsVideo && asksToCreate;
 }
