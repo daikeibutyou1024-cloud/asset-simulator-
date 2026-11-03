@@ -103,7 +103,7 @@ document.getElementById('export').addEventListener('click',async()=>{
   return;
  }
  const mime=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
- if(!mime){status.textContent='このブラウザは対応する動画形式で書き出せません。';stream.getTracks().forEach(t=>t.stop());if(audioContext)audioContext.close();return}
+ if(!mime){status.textContent='このブラウザは対応する動画形式で書き出せません。';stream.getTracks().forEach(t=>t.stop());if(destination){try{exportVideoAudioSource.disconnect(destination)}catch(e){}}return}
  const isMp4=mime.includes('mp4'),recorder=new MediaRecorder(stream,{mimeType:mime}),chunks=[];let stopped=false;
  recorder.ondataavailable=ev=>{if(ev.data.size)chunks.push(ev.data)};
  recorder.onerror=()=>{status.textContent='動画の記録中にエラーが発生しました。';};
