@@ -47,6 +47,7 @@ button{border:0;background:linear-gradient(90deg,#1687b5,#37c7dc);color:#03121b;
 const fileInput=document.getElementById('videoFile'),video=document.getElementById('preview'),info=document.getElementById('fileInfo'),plan=document.getElementById('plan');
 let selected=null,objectUrl=null,aiSegments=[],aiTitle='愛犬のベストシーン';
 let bgmUrl=null;
+let exportAudioContext=null,exportVideoAudioSource=null;
 const fmt=s=>{if(!Number.isFinite(s))return '不明';const m=Math.floor(s/60),r=Math.floor(s%60);return m+'分'+String(r).padStart(2,'0')+'秒'};
 function loadVideo(file){if(!file)return;if(!file.type.startsWith('video/')){info.textContent='動画ファイルを選択してください。';return}selected=file;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(file);video.src=objectUrl;video.style.display='block';info.textContent='ファイル：'+file.name+' ／ 読み込み中…';video.onloadedmetadata=()=>{info.textContent='ファイル：'+file.name+'\\n長さ：'+fmt(video.duration)+' ／ サイズ：約'+(file.size/1024/1024).toFixed(1)+' MB ／ 解像度：'+video.videoWidth+'×'+video.videoHeight;document.getElementById('endAt').value=video.duration.toFixed(1);makePlan()}}
 fileInput.addEventListener('change',()=>loadVideo(fileInput.files&&fileInput.files[0]));
@@ -75,24 +76,38 @@ document.getElementById('export').addEventListener('click',async()=>{
  if(!segments.length){status.textContent='書き出す区間がありません。もう一度AI分析してください。';return}
  const canvas=document.createElement('canvas');const ratio=document.getElementById('outputFormat').value;canvas.width=ratio==='16:9'?1280:ratio==='1:1'?1080:720;canvas.height=ratio==='16:9'?720:ratio==='1:1'?1080:1280;const ctx=canvas.getContext('2d');const stream=canvas.captureStream(30);
  const bgmPlayer=bgmUrl?new Audio(bgmUrl):null;if(bgmPlayer)bgmPlayer.loop=true;
- let audioContext=null;
+ let audioContext=exportAudioContext,destination=null,bgmAudioSource=null,bgmGain=null;
  try{
-  const sourceStream=video.captureStream?video.captureStream():video.mozCaptureStream?video.mozCaptureStream():null;
-  if(sourceStream&&sourceStream.getAudioTracks().length){
-   audioContext=new AudioContext();const destination=audioContext.createMediaStreamDestination();
-   const originalSource=audioContext.createMediaStreamSource(new MediaStream([sourceStream.getAudioTracks()[0]]));originalSource.connect(destination);
-   if(bgmUrl){const bgmSource=audioContext.createMediaElementSource(bgmPlayer);const gain=audioContext.createGain();gain.gain.value=Number(document.getElementById('bgmVolume').value)/100;bgmSource.connect(gain);gain.connect(destination)}
-   destination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
-  }else if(bgmUrl){
-   audioContext=new AudioContext();const destination=audioContext.createMediaStreamDestination();const bgmSource=audioContext.createMediaElementSource(bgmPlayer);const gain=audioContext.createGain();gain.gain.value=Number(document.getElementById('bgmVolume').value)/100;bgmSource.connect(gain);gain.connect(destination);destination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  audioContext=audioContext||(exportAudioContext=new (window.AudioContext||window.webkitAudioContext)());
+  await audioContext.resume();
+  destination=audioContext.createMediaStreamDestination();
+  if(!exportVideoAudioSource){
+   exportVideoAudioSource=audioContext.createMediaElementSource(video);
+   exportVideoAudioSource.connect(audioContext.destination);
   }
- }catch(err){console.warn('音声ミックスを利用できません',err);try{const fallback=video.captureStream();fallback.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(e){}}
+  exportVideoAudioSource.connect(destination);
+  if(bgmPlayer){
+   bgmAudioSource=audioContext.createMediaElementSource(bgmPlayer);
+   bgmGain=audioContext.createGain();
+   bgmGain.gain.value=Number(document.getElementById('bgmVolume').value)/100;
+   bgmAudioSource.connect(bgmGain);
+   bgmGain.connect(destination);
+  }
+  destination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+ }catch(err){
+  console.error('音声トラックの準備に失敗しました',err);
+  status.textContent='音声の準備に失敗したため、無音動画の保存を中止しました。ページを再読み込みして、もう一度お試しください。';
+  stream.getTracks().forEach(t=>t.stop());
+  if(bgmPlayer)bgmPlayer.pause();
+  btn.disabled=false;btn.textContent='編集して動画をダウンロード';
+  return;
+ }
  const mime=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
  if(!mime){status.textContent='このブラウザは対応する動画形式で書き出せません。';stream.getTracks().forEach(t=>t.stop());if(audioContext)audioContext.close();return}
  const isMp4=mime.includes('mp4'),recorder=new MediaRecorder(stream,{mimeType:mime}),chunks=[];let stopped=false;
  recorder.ondataavailable=ev=>{if(ev.data.size)chunks.push(ev.data)};
  recorder.onerror=()=>{status.textContent='動画の記録中にエラーが発生しました。';};
- recorder.onstop=()=>{if(stopped)return;stopped=true;const type=isMp4?'video/mp4':'video/webm',ext=isMp4?'mp4':'webm',blob=new Blob(chunks,{type}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='pet-video-highlights.'+ext;link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);status.textContent='書き出し完了！'+segments.length+'シーンを連結しました。字幕'+(document.getElementById('captionOn').checked?'あり':'なし')+'・BGM'+(bgmUrl?'あり':'なし')+'／'+ext.toUpperCase()+'形式で保存しました。';stream.getTracks().forEach(t=>t.stop());if(audioContext)audioContext.close();if(bgmPlayer)bgmPlayer.pause();btn.disabled=false;btn.textContent='編集して動画をダウンロード'};
+ recorder.onstop=()=>{if(stopped)return;stopped=true;const type=isMp4?'video/mp4':'video/webm',ext=isMp4?'mp4':'webm',blob=new Blob(chunks,{type}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='pet-video-highlights.'+ext;link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);status.textContent='書き出し完了！'+segments.length+'シーンを連結しました。字幕'+(document.getElementById('captionOn').checked?'あり':'なし')+'・BGM'+(bgmUrl?'あり':'なし')+'／'+ext.toUpperCase()+'形式で保存しました。';stream.getTracks().forEach(t=>t.stop());if(destination){try{exportVideoAudioSource.disconnect(destination)}catch(e){}}if(bgmAudioSource)bgmAudioSource.disconnect();if(bgmGain)bgmGain.disconnect();if(bgmPlayer)bgmPlayer.pause();btn.disabled=false;btn.textContent='編集して動画をダウンロード'};
  const seek=async t=>{if(Math.abs(video.currentTime-t)<0.08)return;await new Promise((resolve,reject)=>{const done=()=>{video.removeEventListener('seeked',done);video.removeEventListener('error',fail);resolve()};const fail=()=>{video.removeEventListener('error',fail);reject(new Error('動画の移動に失敗しました'))};video.addEventListener('seeked',done,{once:true});video.addEventListener('error',fail,{once:true});video.currentTime=t})};
  const draw=caption=>{const vw=video.videoWidth,vh=video.videoHeight,scale=Math.max(canvas.width/vw,canvas.height/vh),w=vw*scale,h=vh*scale;ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(video,(canvas.width-w)/2,(canvas.height-h)/2,w,h);
   if(document.getElementById('captionOn').checked&&caption){const text=caption.slice(0,70);ctx.font='bold 43px system-ui, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const maxWidth=620,words=Array.from(text),lines=[];let line='';for(const ch of words){if(ctx.measureText(line+ch).width>maxWidth&&line){lines.push(line);line=ch}else line+=ch}if(line)lines.push(line);const shown=lines.slice(0,2),lineH=58,pad=22,boxH=shown.length*lineH+pad*2,y=canvas.height-150-boxH;ctx.fillStyle='rgba(0,0,0,.62)';ctx.beginPath();ctx.roundRect(35,y,650,boxH,20);ctx.fill();ctx.fillStyle='#fff';shown.forEach((ln,i)=>{ctx.strokeStyle='#111';ctx.lineWidth=5;ctx.strokeText(ln,360,y+pad+lineH*i+lineH/2,610);ctx.fillText(ln,360,y+pad+lineH*i+lineH/2,610)})}
