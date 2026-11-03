@@ -20,7 +20,7 @@ button{border:0;background:linear-gradient(90deg,#1687b5,#37c7dc);color:#03121b;
 </style>
 </head>
 <body><main>
-<div class="top"><div class="brand">J.A.R.V.I.S. / PERSONAL AI COMMAND CENTER</div><div class="status">PET VIDEO STUDIO · PHASE 1</div></div>
+<div class="top"><div class="brand">J.A.R.V.I.S. / PERSONAL AI COMMAND CENTER</div><div class="status">PET VIDEO STUDIO · AI EDITION</div></div>
 <h1>愛犬の動画を、AI編集の素材に。</h1>
 <p class="sub">撮影したチワワの日常動画から静止画を抽出し、Claudeが見どころを分析。おすすめのカット区間と字幕案を提案します。</p>
 <div class="grid">
@@ -29,19 +29,22 @@ button{border:0;background:linear-gradient(90deg,#1687b5,#37c7dc);color:#03121b;
 <input id="videoFile" type="file" accept="video/*">
 <video id="preview" controls playsinline></video><div id="fileInfo" class="meta">まだ動画は選択されていません。</div>
 <div class="field"><label for="mood">編集の方向性</label><select id="mood"><option value="auto">AIにおまかせ（おすすめ）</option><option>かわいさ・癒やし重視</option><option>おもしろさ・バラエティ重視</option><option>日常の記録・自然体</option><option>感動・ストーリー重視</option></select></div>
-<div class="field"><label>開始位置（秒）</label><input id="startAt" type="number" min="0" step="0.5" value="0"></div><div class="field"><label>終了位置（秒）</label><input id="endAt" type="number" min="1" step="0.5" value="30"></div><button id="analyze">Claude AIで見どころを分析</button><button id="export" style="background:linear-gradient(90deg,#83e6a5,#b8f5ce)">編集して動画をダウンロード</button><div id="exportStatus" class="meta"></div>
-<p class="note">まずは指定した範囲を縦型に変換して動画ファイルとして保存する試作版です。AI分析では動画から最大8枚の静止画を抽出してClaudeに送ります。動画ファイル全体は送信しません。選ばれた区間を確認してから書き出せます。書き出し形式はブラウザ対応によりWebMです。</p>
+<div class="field"><label>開始位置（秒）</label><input id="startAt" type="number" min="0" step="0.5" value="0"></div><div class="field"><label>終了位置（秒）</label><input id="endAt" type="number" min="1" step="0.5" value="30"></div><div class="field"><label><input id="captionOn" type="checkbox" checked style="display:inline;width:auto"> AI字幕を動画に焼き込む</label></div>
+<div class="field"><label for="bgmFile">BGMファイル（任意・MP3 / WAV など）</label><label class="drop" for="bgmFile"><strong>＋ BGMを選択</strong><small id="bgmName">BGMなし（元動画の音声を使用）</small></label><input id="bgmFile" type="file" accept="audio/*">
+<label for="bgmVolume" style="margin-top:10px">BGM音量 <span id="bgmVolumeText">25%</span></label><input id="bgmVolume" type="range" min="0" max="100" value="25"></div>
+<button id="analyze">Claude AIで見どころを分析</button><button id="export" style="background:linear-gradient(90deg,#83e6a5,#b8f5ce)">編集して動画をダウンロード</button><div id="exportStatus" class="meta"></div>
+<p class="note">AIが選んだ複数シーンを連結し、字幕を映像に焼き込みます。BGMは手持ちの音源を追加できます。MP4に対応するブラウザではMP4、非対応の場合はWebMで保存します。</p>
 </section>
 <section class="card"><h2>02 / 編集プラン</h2>
 <div><span class="tag">縦型 9:16</span><span class="tag">字幕候補</span><span class="tag">BGM候補</span><span class="tag">動画ファイル保存</span></div>
 <div id="plan" class="plan">動画を選択すると、長さに合わせた編集プランの下書きを表示します。</div>
 <h2 style="margin-top:22px">03 / 次の実装ステップ</h2>
-<div class="meta"><span id="aiStatus">① Claudeによる見どころ検出・字幕案（実装）<br>② 複数カットの自動連結<br>③ 字幕・BGM・効果音の合成<br>④ MP4で保存</span></div>
+<div class="meta"><span id="aiStatus">① Claudeによる見どころ検出・字幕案（実装）<br>✓ ② 複数カットの自動連結<br>✓ ③ AI字幕の焼き込み・BGM追加<br>④ MP4（ブラウザ対応時）／WebM保存</span></div>
 </section></div>
 </main>
 <script>
 const fileInput=document.getElementById('videoFile'),video=document.getElementById('preview'),info=document.getElementById('fileInfo'),plan=document.getElementById('plan');
-let selected=null,objectUrl=null,aiSegments=[];
+let selected=null,objectUrl=null,aiSegments=[];\nlet bgmUrl=null;\nconst bgmAudio=new Audio();bgmAudio.loop=true;
 const fmt=s=>{if(!Number.isFinite(s))return '不明';const m=Math.floor(s/60),r=Math.floor(s%60);return m+'分'+String(r).padStart(2,'0')+'秒'};
 function loadVideo(file){if(!file)return;if(!file.type.startsWith('video/')){info.textContent='動画ファイルを選択してください。';return}selected=file;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(file);video.src=objectUrl;video.style.display='block';info.textContent='ファイル：'+file.name+' ／ 読み込み中…';video.onloadedmetadata=()=>{info.textContent='ファイル：'+file.name+'\\n長さ：'+fmt(video.duration)+' ／ サイズ：約'+(file.size/1024/1024).toFixed(1)+' MB ／ 解像度：'+video.videoWidth+'×'+video.videoHeight;document.getElementById('endAt').value=Math.min(30,video.duration).toFixed(1);makePlan()}}
 fileInput.addEventListener('change',()=>loadVideo(fileInput.files&&fileInput.files[0]));
@@ -57,28 +60,44 @@ async function captureFrames(){const {s,e}=range();const count=Math.min(8,Math.m
 function extractJson(raw){const clean=raw.replace(/^\uFEFF/,'').replace(/```json/gi,'').replace(/```/g,'').trim();const a=clean.indexOf('{'),b=clean.lastIndexOf('}');if(a<0||b<=a)throw new Error('AIの返答をJSONとして読み取れませんでした');return JSON.parse(clean.slice(a,b+1))}
 document.getElementById('analyze').addEventListener('click',async()=>{if(!selected){plan.textContent='先に動画を選択してください。';return}const btn=document.getElementById('analyze');const {s,e}=range();if(e<=s){plan.textContent='終了位置は開始位置より後にしてください。';return}btn.disabled=true;btn.textContent='動画の場面を確認中…';plan.textContent='動画から静止画を抽出しています。少しお待ちください。';try{const frames=await captureFrames();let password=localStorage.getItem('PET_STUDIO_PASSWORD')||'';if(!password){password=prompt('Claude AI分析用のアクセスパスワードを入力してください（J.A.R.V.I.S.で設定したもの）')||'';if(!password)throw new Error('パスワード入力がキャンセルされました');localStorage.setItem('PET_STUDIO_PASSWORD',password)}btn.textContent='Claude AIが分析中…';plan.textContent='抽出した'+frames.length+'枚の画像をClaudeに送信しています。';let response=await fetch('/api/pet-analyze',{method:'POST',headers:{'Content-Type':'application/json','x-jarvis-password':password},body:JSON.stringify({duration:video.duration,mood:document.getElementById('mood').selectedOptions[0].text,frames})});let data=await response.json();if(response.status===401){localStorage.removeItem('PET_STUDIO_PASSWORD');throw new Error('パスワードが違います。もう一度分析ボタンを押して入力してください')}if(!response.ok)throw new Error(data.detail||data.error||'AI分析に失敗しました');const result=extractJson(data.answer);if(!Array.isArray(result.segments)||!result.segments.length)throw new Error('AIが見どころを選べませんでした。別の動画でお試しください');const seg=result.segments.map(x=>({start:Math.max(s,Math.min(e,Number(x.start))),end:Math.max(s,Math.min(e,Number(x.end))),reason:String(x.reason||''),caption:String(x.caption||'')})).filter(x=>Number.isFinite(x.start)&&Number.isFinite(x.end)&&x.end>x.start+0.5).sort((a,b)=>a.start-b.start);if(!seg.length)throw new Error('AIが有効なカット区間を返しませんでした');aiSegments=seg;const best=seg[0];document.getElementById('startAt').value=best.start.toFixed(1);document.getElementById('endAt').value=best.end.toFixed(1);plan.textContent='【Claude AI分析結果】\nタイトル案：'+(result.title||'愛犬のベストシーン')+'\n\n総評：'+(result.summary||'')+'\n\n【おすすめカット】\n'+seg.map((x,i)=>(i+1)+'. '+x.start.toFixed(1)+'秒〜'+x.end.toFixed(1)+'秒（'+(x.end-x.start).toFixed(1)+'秒）\n理由：'+x.reason+'\n字幕案：「'+x.caption+'」').join('\n\n')+'\n\nAIが選んだ複数の区間を保存しました。書き出し時はこの順番で自動連結します。開始・終了位置を手動変更すると、AI区間は解除されます。';document.getElementById('aiStatus').innerHTML='✓ Claudeによる見どころ検出・字幕案（実装）<br>② 複数カットの自動連結<br>③ 字幕・BGM・効果音の合成<br>④ MP4で保存';}catch(err){plan.textContent='AI分析エラー：'+err.message+'\n\nCloudflare Pagesに /api/pet-analyze が反映されているか、環境変数が設定されているか確認してください。'}finally{btn.disabled=false;btn.textContent='Claude AIで見どころを分析'}});
 document.getElementById('mood').addEventListener('change',makePlan);\n['startAt','endAt'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{aiSegments=[]}));
+document.getElementById('bgmFile').addEventListener('change',e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(bgmUrl)URL.revokeObjectURL(bgmUrl);bgmUrl=URL.createObjectURL(file);bgmAudio.src=bgmUrl;document.getElementById('bgmName').textContent=file.name});
+document.getElementById('bgmVolume').addEventListener('input',e=>{document.getElementById('bgmVolumeText').textContent=e.target.value+'%'});
 document.getElementById('export').addEventListener('click',async()=>{
  const status=document.getElementById('exportStatus'),btn=document.getElementById('export');
  if(!selected){status.textContent='先に動画を選択してください。';return}
  if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){status.textContent='このブラウザでは動画書き出しに対応していません。最新版のChromeでお試しください。';return}
- const manual=range(),segments=aiSegments.length?aiSegments.map(x=>({start:x.start,end:x.end})).filter(x=>x.end>x.start+0.5):[{start:manual.s,end:manual.e}];
+ const manual=range(),segments=aiSegments.length?aiSegments.map(x=>({start:x.start,end:x.end,caption:x.caption||''})).filter(x=>x.end>x.start+0.5):[{start:manual.s,end:manual.e,caption:''}];
  if(!segments.length){status.textContent='書き出す区間がありません。もう一度AI分析してください。';return}
  const canvas=document.createElement('canvas');canvas.width=720;canvas.height=1280;const ctx=canvas.getContext('2d');const stream=canvas.captureStream(30);
- try{const source=video.captureStream?video.captureStream():video.mozCaptureStream?video.mozCaptureStream():null;if(source)source.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(err){}
- const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
- if(!mime){status.textContent='このブラウザは対応する動画形式で書き出せません。';stream.getTracks().forEach(t=>t.stop());return}
- const recorder=new MediaRecorder(stream,{mimeType:mime}),chunks=[];let stopped=false;
+ let audioContext=null;
+ try{
+  const sourceStream=video.captureStream?video.captureStream():video.mozCaptureStream?video.mozCaptureStream():null;
+  if(sourceStream&&sourceStream.getAudioTracks().length){
+   audioContext=new AudioContext();const destination=audioContext.createMediaStreamDestination();
+   const originalSource=audioContext.createMediaStreamSource(new MediaStream([sourceStream.getAudioTracks()[0]]));originalSource.connect(destination);
+   if(bgmUrl){const bgmSource=audioContext.createMediaElementSource(bgmAudio);const gain=audioContext.createGain();gain.gain.value=Number(document.getElementById('bgmVolume').value)/100;bgmSource.connect(gain);gain.connect(destination)}
+   destination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  }else if(bgmUrl){
+   audioContext=new AudioContext();const destination=audioContext.createMediaStreamDestination();const bgmSource=audioContext.createMediaElementSource(bgmAudio);const gain=audioContext.createGain();gain.gain.value=Number(document.getElementById('bgmVolume').value)/100;bgmSource.connect(gain);gain.connect(destination);destination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  }
+ }catch(err){console.warn('音声ミックスを利用できません',err);try{const fallback=video.captureStream();fallback.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(e){}}
+ const mime=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+ if(!mime){status.textContent='このブラウザは対応する動画形式で書き出せません。';stream.getTracks().forEach(t=>t.stop());if(audioContext)audioContext.close();return}
+ const isMp4=mime.includes('mp4'),recorder=new MediaRecorder(stream,{mimeType:mime}),chunks=[];let stopped=false;
  recorder.ondataavailable=ev=>{if(ev.data.size)chunks.push(ev.data)};
  recorder.onerror=()=>{status.textContent='動画の記録中にエラーが発生しました。';};
- recorder.onstop=()=>{if(stopped)return;stopped=true;const blob=new Blob(chunks,{type:mime}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='pet-video-highlights.webm';link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);status.textContent='書き出し完了！'+segments.length+'か所のシーンをつないだ動画を保存しました（WebM形式）。';stream.getTracks().forEach(t=>t.stop());btn.disabled=false;btn.textContent='編集して動画をダウンロード'};
- const seek=async t=>{if(Math.abs(video.currentTime-t)<0.08)return;await new Promise((resolve,reject)=>{const done=()=>{video.removeEventListener('seeked',done);video.removeEventListener('error',fail);resolve()};const fail=()=>{video.removeEventListener('seeked',done);reject(new Error('動画の移動に失敗しました'))};video.addEventListener('seeked',done,{once:true});video.addEventListener('error',fail,{once:true});video.currentTime=t})};
- const draw=()=>{const vw=video.videoWidth,vh=video.videoHeight,scale=Math.max(canvas.width/vw,canvas.height/vh),w=vw*scale,h=vh*scale;ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(video,(canvas.width-w)/2,(canvas.height-h)/2,w,h)};
- btn.disabled=true;btn.textContent='動画を連結中…';status.textContent='AIが選んだ'+segments.length+'か所のシーンを順番につないでいます。完了まで画面を閉じないでください。';
+ recorder.onstop=()=>{if(stopped)return;stopped=true;const type=isMp4?'video/mp4':'video/webm',ext=isMp4?'mp4':'webm',blob=new Blob(chunks,{type}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='pet-video-highlights.'+ext;link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);status.textContent='書き出し完了！'+segments.length+'シーンを連結しました。字幕'+(document.getElementById('captionOn').checked?'あり':'なし')+'・BGM'+(bgmUrl?'あり':'なし')+'／'+ext.toUpperCase()+'形式で保存しました。';stream.getTracks().forEach(t=>t.stop());if(audioContext)audioContext.close();bgmAudio.pause();btn.disabled=false;btn.textContent='編集して動画をダウンロード'};
+ const seek=async t=>{if(Math.abs(video.currentTime-t)<0.08)return;await new Promise((resolve,reject)=>{const done=()=>{video.removeEventListener('seeked',done);video.removeEventListener('error',fail);resolve()};const fail=()=>{video.removeEventListener('error',fail);reject(new Error('動画の移動に失敗しました'))};video.addEventListener('seeked',done,{once:true});video.addEventListener('error',fail,{once:true});video.currentTime=t})};
+ const draw=caption=>{const vw=video.videoWidth,vh=video.videoHeight,scale=Math.max(canvas.width/vw,canvas.height/vh),w=vw*scale,h=vh*scale;ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(video,(canvas.width-w)/2,(canvas.height-h)/2,w,h);
+  if(document.getElementById('captionOn').checked&&caption){const text=caption.slice(0,70);ctx.font='bold 43px system-ui, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const maxWidth=620,words=Array.from(text),lines=[];let line='';for(const ch of words){if(ctx.measureText(line+ch).width>maxWidth&&line){lines.push(line);line=ch}else line+=ch}if(line)lines.push(line);const shown=lines.slice(0,2),lineH=58,pad=22,boxH=shown.length*lineH+pad*2,y=canvas.height-150-boxH;ctx.fillStyle='rgba(0,0,0,.62)';ctx.beginPath();ctx.roundRect(35,y,650,boxH,20);ctx.fill();ctx.fillStyle='#fff';shown.forEach((ln,i)=>{ctx.strokeStyle='#111';ctx.lineWidth=5;ctx.strokeText(ln,360,y+pad+lineH*i+lineH/2,610);ctx.fillText(ln,360,y+pad+lineH*i+lineH/2,610)})}
+ };
+ btn.disabled=true;btn.textContent='動画を編集・連結中…';status.textContent='AIが選んだ'+segments.length+'シーンを連結し、字幕'+(document.getElementById('captionOn').checked?'・BGM':'')+'を合成しています。完了まで画面を閉じないでください。';
  try{
-  video.pause();await seek(segments[0].start);recorder.start(250);
+  video.pause();if(audioContext&&audioContext.state==='suspended')await audioContext.resume();await seek(segments[0].start);if(bgmUrl){bgmAudio.currentTime=0;bgmAudio.volume=1;await bgmAudio.play()}
+  recorder.start(250);
   for(let i=0;i<segments.length;i++){
    const seg=segments[i];await seek(seg.start);await video.play();
-   await new Promise((resolve,reject)=>{let raf;const tick=()=>{if(recorder.state==='inactive'){cancelAnimationFrame(raf);reject(new Error('動画の記録が停止しました'));return}draw();if(video.currentTime>=seg.end||video.ended){video.pause();cancelAnimationFrame(raf);resolve();return}raf=requestAnimationFrame(tick)};raf=requestAnimationFrame(tick)});
+   await new Promise((resolve,reject)=>{let raf;const tick=()=>{if(recorder.state==='inactive'){cancelAnimationFrame(raf);reject(new Error('動画の記録が停止しました'));return}draw(seg.caption);if(video.currentTime>=seg.end||video.ended){video.pause();cancelAnimationFrame(raf);resolve();return}raf=requestAnimationFrame(tick)};raf=requestAnimationFrame(tick)});
    video.pause();
   }
   if(recorder.state!=='inactive')recorder.stop();
