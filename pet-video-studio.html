@@ -68,7 +68,8 @@ document.getElementById('export').addEventListener('click',async()=>{
  if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){status.textContent='このブラウザでは動画書き出しに対応していません。最新版のChromeでお試しください。';return}
  const manual=range(),segments=aiSegments.length?aiSegments.map(x=>({start:x.start,end:x.end,caption:x.caption||''})).filter(x=>x.end>x.start+0.5):[{start:manual.s,end:manual.e,caption:''}];
  if(!segments.length){status.textContent='書き出す区間がありません。もう一度AI分析してください。';return}
- const canvas=document.createElement('canvas');canvas.width=720;canvas.height=1280;const ctx=canvas.getContext('2d');const stream=canvas.captureStream(30);\n const bgmPlayer=bgmUrl?new Audio(bgmUrl):null;if(bgmPlayer)bgmPlayer.loop=true;
+ const canvas=document.createElement('canvas');canvas.width=720;canvas.height=1280;const ctx=canvas.getContext('2d');const stream=canvas.captureStream(30);
+ const bgmPlayer=bgmUrl?new Audio(bgmUrl):null;if(bgmPlayer)bgmPlayer.loop=true;
  let audioContext=null;
  try{
   const sourceStream=video.captureStream?video.captureStream():video.mozCaptureStream?video.mozCaptureStream():null;
@@ -78,7 +79,7 @@ document.getElementById('export').addEventListener('click',async()=>{
    if(bgmUrl){const bgmSource=audioContext.createMediaElementSource(bgmPlayer);const gain=audioContext.createGain();gain.gain.value=Number(document.getElementById('bgmVolume').value)/100;bgmSource.connect(gain);gain.connect(destination)}
    destination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
   }else if(bgmUrl){
-   audioContext=new AudioContext();const destination=audioContext.createMediaStreamDestination();const bgmSource=audioContext.createMediaElementSource(bgmAudio);const gain=audioContext.createGain();gain.gain.value=Number(document.getElementById('bgmVolume').value)/100;bgmSource.connect(gain);gain.connect(destination);destination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+   audioContext=new AudioContext();const destination=audioContext.createMediaStreamDestination();const bgmSource=audioContext.createMediaElementSource(bgmPlayer);const gain=audioContext.createGain();gain.gain.value=Number(document.getElementById('bgmVolume').value)/100;bgmSource.connect(gain);gain.connect(destination);destination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
   }
  }catch(err){console.warn('音声ミックスを利用できません',err);try{const fallback=video.captureStream();fallback.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(e){}}
  const mime=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
