@@ -27,6 +27,12 @@ button{border:0;background:linear-gradient(90deg,#1687b5,#37c7dc);color:#03121b;
 <section class="card"><h2>01 / 動画を読み込む</h2>
 <label class="drop" id="dropZone" for="videoFile"><strong>＋ 動画を選択</strong><small>ここに動画をドラッグ＆ドロップしても読み込めます<br>スマホ・PCの動画ファイル（MP4 / MOV など）</small></label>
 <input id="videoFile" type="file" accept="video/*">
+<div style="margin-top:12px;border:1px solid #31506a;border-radius:12px;padding:12px;background:#0a1b2b">
+ <label for="multiVideoFile" style="display:block;color:#b8ccdd;font-size:13px;margin-bottom:8px">複数の動画をまとめる</label>
+ <input id="multiVideoFile" type="file" accept="video/*" multiple style="display:block;width:100%;color:#b8ccdd">
+ <button type="button" id="joinVideos" style="margin-top:10px">選んだ動画を1本につなげる</button>
+ <p id="joinStatus" class="note">複数の動画を選び、選択した順番で1本にまとめます。結合後は通常どおりAI分析・編集できます。</p>
+</div>
 <div class="field" style="border:1px solid #31506a;border-radius:12px;padding:12px;margin-top:12px">
  <label style="margin-bottom:8px">編集プロジェクトの一時保存</label>
  <button type="button" id="saveProject" style="background:linear-gradient(90deg,#1687b5,#37c7dc)">現在の編集内容を保存</button>
@@ -58,6 +64,55 @@ let exportAudioContext=null,exportVideoAudioSource=null;
 const fmt=s=>{if(!Number.isFinite(s))return '不明';const m=Math.floor(s/60),r=Math.floor(s%60);return m+'分'+String(r).padStart(2,'0')+'秒'};
 function loadVideo(file){if(!file)return;if(!file.type.startsWith('video/')){info.textContent='動画ファイルを選択してください。';return}selected=file;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(file);video.src=objectUrl;video.style.display='block';info.textContent='ファイル：'+file.name+' ／ 読み込み中…';video.onloadedmetadata=()=>{info.textContent='ファイル：'+file.name+'\\n長さ：'+fmt(video.duration)+' ／ サイズ：約'+(file.size/1024/1024).toFixed(1)+' MB ／ 解像度：'+video.videoWidth+'×'+video.videoHeight;document.getElementById('endAt').value=video.duration.toFixed(1);makePlan()}}
 fileInput.addEventListener('change',()=>loadVideo(fileInput.files&&fileInput.files[0]));
+document.getElementById('joinVideos').addEventListener('click',async()=>{
+ const input=document.getElementById('multiVideoFile'),files=Array.from(input.files||[]),status=document.getElementById('joinStatus'),btn=document.getElementById('joinVideos');
+ if(files.length<2){status.textContent='2本以上の動画を選択してください。';return}
+ if(files.some(f=>!f.type.startsWith('video/'))){status.textContent='動画ファイル以外が含まれています。動画だけ選択してください。';return}
+ if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){status.textContent='このブラウザでは動画の結合に対応していません。最新版のSafariまたはChromeでお試しください。';return}
+ const mime=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+ if(!mime){status.textContent='このブラウザでは結合動画を書き出せる形式がありません。';return}
+ btn.disabled=true;btn.textContent='動画を結合中…';
+ let tempUrl=null,audioContext=null,recorder=null,stream=null,source=null,destination=null;
+ try{
+  const player=document.createElement('video');player.muted=false;player.playsInline=true;player.preload='auto';
+  player.style.cssText='position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+  document.body.appendChild(player);
+  const canvas=document.createElement('canvas');canvas.width=1280;canvas.height=720;
+  const ctx=canvas.getContext('2d');stream=canvas.captureStream(30);
+  audioContext=new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();
+  destination=audioContext.createMediaStreamDestination();source=audioContext.createMediaElementSource(player);
+  source.connect(destination);source.connect(audioContext.destination);
+  destination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  const chunks=[];recorder=new MediaRecorder(stream,{mimeType:mime});
+  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  const stopped=new Promise((resolve,reject)=>{recorder.onstop=()=>resolve();recorder.onerror=()=>reject(new Error('動画の記録中にエラーが発生しました'))});
+  const drawFrame=()=>{const w=player.videoWidth,h=player.videoHeight;if(!w||!h)return;const scale=Math.min(canvas.width/w,canvas.height/h),dw=w*scale,dh=h*scale;ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(player,(canvas.width-dw)/2,(canvas.height-dh)/2,dw,dh)};
+  const waitForMetadata=()=>new Promise((resolve,reject)=>{if(player.readyState>=1&&player.videoWidth){resolve();return}const ok=()=>{cleanup();resolve()},bad=()=>{cleanup();reject(new Error('動画を読み込めませんでした'))},cleanup=()=>{player.removeEventListener('loadedmetadata',ok);player.removeEventListener('error',bad)};player.addEventListener('loadedmetadata',ok,{once:true});player.addEventListener('error',bad,{once:true})});
+  const waitForEnded=()=>new Promise((resolve,reject)=>{let raf;const cleanup=()=>{cancelAnimationFrame(raf);player.removeEventListener('ended',done);player.removeEventListener('error',bad)};const done=()=>{drawFrame();cleanup();resolve()},bad=()=>{cleanup();reject(new Error('動画の再生に失敗しました'))};const tick=()=>{drawFrame();if(player.ended||player.currentTime>=player.duration){done();return}raf=requestAnimationFrame(tick)};player.addEventListener('ended',done,{once:true});player.addEventListener('error',bad,{once:true});raf=requestAnimationFrame(tick)});
+  recorder.start(250);
+  for(let i=0;i<files.length;i++){
+   status.textContent='結合中：'+(i+1)+' / '+files.length+'本目「'+files[i].name+'」';
+   if(tempUrl)URL.revokeObjectURL(tempUrl);
+   tempUrl=URL.createObjectURL(files[i]);player.src=tempUrl;player.load();await waitForMetadata();drawFrame();await player.play();await waitForEnded();player.pause();
+  }
+  recorder.stop();await stopped;
+  const blob=new Blob(chunks,{type:mime.split(';')[0]});
+  if(!blob.size)throw new Error('結合した動画データが空でした');
+  const ext=mime.includes('mp4')?'mp4':'webm';
+  const merged=new File([blob],'pet-video-joined.'+ext,{type:blob.type||mime.split(';')[0],lastModified:Date.now()});
+  loadVideo(merged);fileInput.value='';
+  status.textContent=files.length+'本の動画を1本に結合しました。合計 '+(blob.size/1024/1024).toFixed(1)+' MB。続けてAI分析・編集ができます。';
+ }catch(err){status.textContent='結合できませんでした：'+err.message+'。動画の形式や長さを確認して、もう一度お試しください。';}
+ finally{
+  if(tempUrl)URL.revokeObjectURL(tempUrl);
+  if(recorder&&recorder.state!=='inactive'){try{recorder.stop()}catch(e){}}
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  if(source){try{source.disconnect()}catch(e){}}
+  if(audioContext){try{await audioContext.close()}catch(e){}}
+  btn.disabled=false;btn.textContent='選んだ動画を1本につなげる';
+ }
+});
+
 const dropZone=document.getElementById('dropZone');
 ['dragenter','dragover'].forEach(type=>dropZone.addEventListener(type,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.add('dragover')}));
 ['dragleave','drop'].forEach(type=>dropZone.addEventListener(type,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.remove('dragover')}));
