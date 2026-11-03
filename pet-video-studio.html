@@ -9,7 +9,7 @@
 main{max-width:1000px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{letter-spacing:.16em;color:var(--cyan);font-size:12px}.status{border:1px solid #28614e;color:#8ff0bf;border-radius:30px;padding:7px 12px;font-size:12px}
 h1{font-size:clamp(25px,5vw,42px);margin:22px 0 8px}.sub{color:var(--muted);line-height:1.7}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:24px}
 .card{background:linear-gradient(145deg,#13243a,#0c192a);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 15px 45px #0004}.card h2{font-size:16px;margin:0 0 14px}
-.drop{border:1px dashed #3d7794;border-radius:14px;padding:26px;text-align:center;background:#0a1b2b;cursor:pointer}.drop strong{display:block;color:var(--cyan);margin-bottom:8px}.drop small{color:var(--muted)}
+.drop{border:1px dashed #3d7794;border-radius:14px;padding:26px;text-align:center;background:#0a1b2b;cursor:pointer;transition:.2s}.drop.dragover{border:2px solid var(--cyan);background:#12334a;box-shadow:0 0 24px #35c9e455;transform:scale(1.01)}.drop strong{display:block;color:var(--cyan);margin-bottom:8px}.drop small{color:var(--muted)}
 input[type=file]{display:none}video{width:100%;max-height:420px;background:#02070c;border-radius:12px;margin-top:14px;display:none}
 .meta{color:var(--muted);font-size:13px;margin-top:10px;line-height:1.7}.field{margin:17px 0}.field label{display:block;font-size:13px;color:#b8ccdd;margin-bottom:8px}
 select,input[type=range]{width:100%}select{background:#091727;border:1px solid #31506a;color:#eaf7ff;padding:12px;border-radius:10px}
@@ -25,7 +25,7 @@ button{border:0;background:linear-gradient(90deg,#1687b5,#37c7dc);color:#03121b;
 <p class="sub">撮影したチワワの日常動画を読み込み、長さや用途を確認。次の段階でAIが見どころを選び、カット・字幕・音楽を組み立てます。</p>
 <div class="grid">
 <section class="card"><h2>01 / 動画を読み込む</h2>
-<label class="drop" for="videoFile"><strong>＋ 動画を選択</strong><small>スマホ・PCの動画ファイル（MP4 / MOV など）</small></label>
+<label class="drop" id="dropZone" for="videoFile"><strong>＋ 動画を選択</strong><small>ここに動画をドラッグ＆ドロップしても読み込めます<br>スマホ・PCの動画ファイル（MP4 / MOV など）</small></label>
 <input id="videoFile" type="file" accept="video/*">
 <video id="preview" controls playsinline></video><div id="fileInfo" class="meta">まだ動画は選択されていません。</div>
 <div class="field"><label for="mood">編集の方向性</label><select id="mood"><option value="auto">AIにおまかせ（おすすめ）</option><option>かわいさ・癒やし重視</option><option>おもしろさ・バラエティ重視</option><option>日常の記録・自然体</option><option>感動・ストーリー重視</option></select></div>
@@ -43,7 +43,13 @@ button{border:0;background:linear-gradient(90deg,#1687b5,#37c7dc);color:#03121b;
 const fileInput=document.getElementById('videoFile'),video=document.getElementById('preview'),info=document.getElementById('fileInfo'),plan=document.getElementById('plan');
 let selected=null,objectUrl=null;
 const fmt=s=>{if(!Number.isFinite(s))return '不明';const m=Math.floor(s/60),r=Math.floor(s%60);return m+'分'+String(r).padStart(2,'0')+'秒'};
-fileInput.addEventListener('change',()=>{selected=fileInput.files&&fileInput.files[0];if(!selected)return;if(!selected.type.startsWith('video/')){info.textContent='動画ファイルを選択してください。';return}if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(selected);video.src=objectUrl;video.style.display='block';info.textContent='ファイル：'+selected.name+' ／ 読み込み中…';video.onloadedmetadata=()=>{info.textContent='ファイル：'+selected.name+'\n長さ：'+fmt(video.duration)+' ／ サイズ：約'+(selected.size/1024/1024).toFixed(1)+' MB ／ 解像度：'+video.videoWidth+'×'+video.videoHeight;document.getElementById('endAt').value=Math.min(30,video.duration).toFixed(1);makePlan()}});
+function loadVideo(file){if(!file)return;if(!file.type.startsWith('video/')){info.textContent='動画ファイルを選択してください。';return}selected=file;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(file);video.src=objectUrl;video.style.display='block';info.textContent='ファイル：'+file.name+' ／ 読み込み中…';video.onloadedmetadata=()=>{info.textContent='ファイル：'+file.name+'\\n長さ：'+fmt(video.duration)+' ／ サイズ：約'+(file.size/1024/1024).toFixed(1)+' MB ／ 解像度：'+video.videoWidth+'×'+video.videoHeight;document.getElementById('endAt').value=Math.min(30,video.duration).toFixed(1);makePlan()}}
+fileInput.addEventListener('change',()=>loadVideo(fileInput.files&&fileInput.files[0]));
+const dropZone=document.getElementById('dropZone');
+['dragenter','dragover'].forEach(type=>dropZone.addEventListener(type,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.add('dragover')}));
+['dragleave','drop'].forEach(type=>dropZone.addEventListener(type,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.remove('dragover')}));
+dropZone.addEventListener('drop',e=>{const files=e.dataTransfer&&e.dataTransfer.files;if(files&&files.length)loadVideo(files[0])});
+document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('drop',e=>e.preventDefault());
 function range(){const s=Math.max(0,Number(document.getElementById('startAt').value)||0),e=Math.min(video.duration,Number(document.getElementById('endAt').value)||video.duration);return {s,e}}
 function makePlan(){if(!selected||!Number.isFinite(video.duration))return;const {s,e}=range(),mood=document.getElementById('mood').value;const style=mood==='auto'?(video.duration<45?'表情や動きのかわいさを優先':'日常の流れと見せ場を両立'):mood;plan.textContent='【編集プラン】\n素材：'+fmt(video.duration)+'\n使用範囲：'+s.toFixed(1)+'秒〜'+e.toFixed(1)+'秒（'+Math.max(0,e-s).toFixed(1)+'秒）\n方向性：'+style+'\n\n・選択範囲を縦型9:16に変換\n・画面中央を基準にトリミング\n・完成動画をダウンロード\n\n※現在の試作版は指定範囲の切り出しと縦型変換を行います。映像内容をAIが判断して見どころを選ぶ機能は次段階です。'}
 document.getElementById('analyze').addEventListener('click',()=>{if(!selected){plan.textContent='先に動画を選択してください。';return}makePlan()});
