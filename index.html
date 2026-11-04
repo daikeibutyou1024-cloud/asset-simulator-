@@ -243,6 +243,17 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
   font-size:11px;line-height:1.9;color:#c5e4f5
 }
 .output-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+
+.calendar-event{padding:13px;margin:10px 0;border:1px solid #21465f;border-radius:9px;background:#061525}
+.calendar-event-title{font-size:12px;color:var(--cyan);margin-bottom:10px;font-weight:700}
+.calendar-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.calendar-edit-field label{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}
+.calendar-edit-field input{width:100%;min-width:0;background:#030d1a;border:1px solid #21465f;border-radius:7px;padding:9px;color:var(--text);font-size:12px}
+.calendar-event-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.calendar-event-actions button{padding:8px 12px}
+.calendar-event-status{font-size:10px;color:var(--muted);margin-top:8px}
+@media(max-width:480px){.calendar-edit-grid{grid-template-columns:1fr}}
+
 .footer{text-align:center;color:#55758f;font-size:9px;letter-spacing:2px;padding:25px 10px 10px}
 @keyframes rotate{to{transform:rotate(360deg)}}
 @keyframes rotate-reverse{to{transform:rotateX(68deg) rotate(-385deg)}}
@@ -687,13 +698,6 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
    <button class="btn-secondary" id="calendar-refresh" type="button" style="margin-left:7px">今日の予定を更新</button>
   </div>
   <div class="panel form-panel">
-   <div class="panel-title"><h3>VOICE COMMAND EXAMPLES</h3><span>J.A.R.V.I.S.</span></div>
-   <div class="output">「11月6日、仕事、11時から18時」
-「明日、病院、10時から11時」
-「今日の予定は？」
-「明日の予定を教えて」</div>
-  </div>
-  <div class="panel form-panel">
    <div class="panel-title"><h3>UPCOMING EVENTS</h3><span>GOOGLE CALENDAR</span></div>
    <div class="output" id="calendar-events">Googleカレンダーに接続すると予定が表示されます。</div>
   </div>
@@ -1086,20 +1090,64 @@ $("mini-calendar-next")?.addEventListener("click",async()=>{calendarViewMonth.se
 $("mini-calendar-today")?.addEventListener("click",()=>{const today=new Date();calendarViewMonth=new Date(today.getFullYear(),today.getMonth(),1);selectCalendarDate(today);loadCalendarMonth().catch(error=>{$("calendar-top-events").textContent="取得エラー："+error.message;});});
 renderMiniCalendar();
 
+function calendarInputValue(value){
+ if(!value)return "";
+ const date=new Date(value);
+ const pad=n=>String(n).padStart(2,"0");
+ return date.getFullYear()+"-"+pad(date.getMonth()+1)+"-"+pad(date.getDate())+"T"+pad(date.getHours())+":"+pad(date.getMinutes());
+}
 function renderCalendarEvents(events){
  const target=$("calendar-events");
  const topTarget=$("calendar-top-events");
- const content=events.length?events.map(event=>{
-  const start=event.start?.dateTime||event.start?.date||"";
-  const end=event.end?.dateTime||event.end?.date||"";
-  const format=value=>value.includes("T")?new Date(value).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):value;
-  return format(start)+"  "+(event.summary||"（タイトルなし）")+(end?" ～ "+format(end):"");
- }).join("\n"):"この期間に予定はありません。";
- if(target)target.textContent=content;
- if(topTarget)topTarget.textContent="今日の予定："+(events.length?events.map(event=>{
+ if(topTarget)topTarget.textContent="選択日の予定："+(events.length?events.map(event=>{
   const start=event.start?.dateTime?new Date(event.start.dateTime).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}):"終日";
   return start+" "+(event.summary||"予定");
  }).join(" ／ "):"予定はありません");
+ if(!target)return;
+ target.innerHTML="";
+ if(!events.length){target.textContent="この期間に予定はありません。";return;}
+ events.forEach(event=>{
+  const card=document.createElement("div");card.className="calendar-event";
+  const title=document.createElement("div");title.className="calendar-event-title";title.textContent="予定を編集";
+  const grid=document.createElement("div");grid.className="calendar-edit-grid";
+  const makeField=(labelText,type,value)=>{
+   const wrap=document.createElement("div");wrap.className="calendar-edit-field";
+   const label=document.createElement("label");label.textContent=labelText;
+   const input=document.createElement("input");input.type=type;input.value=value||"";
+   wrap.append(label,input);grid.appendChild(wrap);return input;
+  };
+  const name=makeField("予定名","text",event.summary||"");
+  const startValue=event.start?.dateTime||"";
+  const endValue=event.end?.dateTime||"";
+  const start=makeField("開始日時","datetime-local",calendarInputValue(startValue));
+  const end=makeField("終了日時","datetime-local",calendarInputValue(endValue));
+  const actions=document.createElement("div");actions.className="calendar-event-actions";
+  const save=document.createElement("button");save.type="button";save.className="btn";save.textContent="変更を保存";
+  const remove=document.createElement("button");remove.type="button";remove.className="btn-secondary";remove.textContent="削除";
+  const status=document.createElement("div");status.className="calendar-event-status";
+  save.addEventListener("click",async()=>{
+   if(!event.id){status.textContent="この予定は編集用IDを取得できません。";return;}
+   if(!name.value.trim()||!start.value||!end.value){status.textContent="予定名・開始・終了を入力してください。";return;}
+   if(new Date(end.value)<=new Date(start.value)){status.textContent="終了日時は開始日時より後にしてください。";return;}
+   save.disabled=true;status.textContent="Googleカレンダーに保存中…";
+   try{
+    await calendarFetch("/api/calendar",{method:"PUT",body:JSON.stringify({eventId:event.id,summary:name.value.trim(),start:new Date(start.value).toISOString(),end:new Date(end.value).toISOString()})});
+    await loadCalendarMonth();await selectCalendarDate(calendarSelectedDate);
+    log("Googleカレンダーの予定を変更しました");
+   }catch(error){status.textContent="保存できませんでした："+error.message;save.disabled=false;}
+  });
+  remove.addEventListener("click",async()=>{
+   if(!event.id){status.textContent="この予定は削除用IDを取得できません。";return;}
+   if(!confirm("「"+(event.summary||"この予定")+"」をGoogleカレンダーから削除しますか？"))return;
+   remove.disabled=true;status.textContent="削除中…";
+   try{
+    await calendarFetch("/api/calendar?eventId="+encodeURIComponent(event.id),{method:"DELETE"});
+    await loadCalendarMonth();await selectCalendarDate(calendarSelectedDate);
+    log("Googleカレンダーの予定を削除しました");
+   }catch(error){status.textContent="削除できませんでした："+error.message;remove.disabled=false;}
+  });
+  actions.append(save,remove);card.append(title,grid,actions,status);target.appendChild(card);
+ });
 }
 async function loadCalendarDay(offset=0){
  const day=new Date();day.setDate(day.getDate()+offset);
