@@ -1019,11 +1019,11 @@ function calendarJapaneseNumber(value){
 function normalizeCalendarSpeech(text){
  let value=String(text||"").replace(/[０-９]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xFEE0));
  // 音声認識が「十一 時」「六 日」のように数字と単位を分ける場合の空白を除去
- value=value.replace(/([一二三四五六七八九十〇零0-9]+)\\s+(?=[年月日時分])/g,"$1");
+ value=value.replace(/([一二三四五六七八九十〇零0-9]+)\s+(?=[年月日時分])/g,"$1");
  const spoken={"じゅういちがつ":"11月","じゅうにがつ":"12月","じゅうがつ":"10月","じゅういちじ":"11時","じゅうにじ":"12時","じゅうさんじ":"13時","じゅうよじ":"14時","じゅうごじ":"15時","じゅうろくじ":"16時","じゅうしちじ":"17時","じゅうはちじ":"18時","じゅうくじ":"19時","にじゅうじ":"20時","じゅういち":"11","じゅうに":"12","じゅうさん":"13","じゅうよん":"14","じゅうご":"15","じゅうろく":"16","じゅうなな":"17","じゅうはち":"18","じゅうく":"19","にじゅう":"20","むいか":"6日","ろくにち":"6日","ついたち":"1日","ふつか":"2日","みっか":"3日","よっか":"4日","いつか":"5日","なのか":"7日","ようか":"8日","ここのか":"9日","とおか":"10日"};
  for(const [from,to] of Object.entries(spoken))value=value.replaceAll(from,to);
  value=value.replace(/[一二三四五六七八九十〇零]+(?=月|日|時|分)/g,token=>String(calendarJapaneseNumber(token)));
- value=value.replace(/(午前|午後)\\s*/g,"$1");
+ value=value.replace(/(午前|午後)\s*/g,"$1");
  return value.replace(/[、,。]/g," ").replace(/\\s+/g," ").trim();
 }
 function parseCalendarDate(text){
