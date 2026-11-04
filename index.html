@@ -438,6 +438,26 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
   .staff-face .staff-photo{object-position:center 25%}
 }
 
+
+/* MONTHLY SCHEDULE CALENDAR */
+.calendar-quick-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mini-calendar{margin-top:14px;padding-top:12px;border-top:1px solid #1b4057}
+.mini-calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mini-calendar-head strong{font-size:13px;letter-spacing:1px;color:#dffaff}
+.mini-calendar-nav{display:flex;gap:6px}
+.mini-calendar-nav button{min-width:34px;height:30px;border:1px solid #24516d;border-radius:6px;background:#081a2b;color:#9fefff;font-size:16px}
+.mini-calendar-nav button:hover{border-color:var(--cyan);background:#10304a}
+.mini-calendar-nav #mini-calendar-today{font-size:10px;padding:0 10px}
+.mini-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.mini-calendar-day{min-height:37px;display:grid;place-items:center;position:relative;border:1px solid #17364e;border-radius:6px;background:#061425;color:#d7eefa;font-size:11px;cursor:pointer}
+.mini-calendar-day.weekday{min-height:22px;border:0;background:transparent;color:#6f9bb8;font-size:9px;cursor:default}
+.mini-calendar-day.other-month{opacity:.32}
+.mini-calendar-day.today{border-color:#57eaff;color:#57eaff}
+.mini-calendar-day.selected{background:linear-gradient(135deg,#075078,#123e72);border-color:#57eaff;box-shadow:0 0 12px #168cff45;color:#fff}
+.mini-calendar-day.has-event:after{content:"";position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:#58ffc2;box-shadow:0 0 6px #58ffc2}
+.mini-calendar-day:disabled{cursor:default}
+@media(max-width:700px){.calendar-quickbar{margin:9px 10px!important;padding:12px!important}.mini-calendar-grid{gap:3px}.mini-calendar-day{min-height:34px;font-size:10px}.calendar-quick-head>div:last-child{width:100%}.calendar-quick-head button{flex:1}}
+
 </style>
 </head>
 <body>
@@ -452,15 +472,28 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  </div>
 </header>
 
-<div class="calendar-quickbar panel" style="max-width:1500px;margin:12px auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
- <div style="min-width:180px;flex:1">
-  <div style="font-size:11px;letter-spacing:2px;color:#57eaff;font-weight:700">GOOGLE CALENDAR / SCHEDULE</div>
-  <div id="calendar-top-events" style="font-size:13px;color:#e6f8ff;margin-top:5px">今日の予定：未接続</div>
+<div class="calendar-quickbar panel" style="max-width:1500px;margin:12px auto;padding:14px 16px">
+ <div class="calendar-quick-head">
+  <div style="min-width:180px;flex:1">
+   <div style="font-size:11px;letter-spacing:2px;color:#57eaff;font-weight:700">GOOGLE CALENDAR / SCHEDULE</div>
+   <div id="calendar-top-events" style="font-size:13px;color:#e6f8ff;margin-top:5px">今日の予定：未接続</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+   <button class="btn" id="google-connect-top" type="button">Googleカレンダー接続</button>
+   <button class="btn-secondary" id="calendar-top-refresh" type="button">今日の予定</button>
+   <button class="btn-secondary" type="button" data-page="calendar">詳細</button>
+  </div>
  </div>
- <div style="display:flex;gap:8px;flex-wrap:wrap">
-  <button class="btn" id="google-connect-top" type="button">Googleカレンダー接続</button>
-  <button class="btn-secondary" id="calendar-top-refresh" type="button">今日の予定</button>
-  <button class="btn-secondary" type="button" data-page="calendar">詳細</button>
+ <div class="mini-calendar">
+  <div class="mini-calendar-head">
+   <strong id="mini-calendar-title">2026年11月</strong>
+   <div class="mini-calendar-nav">
+    <button type="button" id="mini-calendar-prev" aria-label="前の月">‹</button>
+    <button type="button" id="mini-calendar-today">今日</button>
+    <button type="button" id="mini-calendar-next" aria-label="次の月">›</button>
+   </div>
+  </div>
+  <div class="mini-calendar-grid" id="mini-calendar-grid" aria-label="月間カレンダー"></div>
  </div>
 </div>
 
@@ -949,6 +982,51 @@ function parseCalendarDate(text){
  }
  return date;
 }
+let calendarSelectedDate=new Date();
+let calendarViewMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+let calendarMonthEvents=[];
+function dateKey(date){return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");}
+function renderMiniCalendar(){
+ const title=$("mini-calendar-title"),grid=$("mini-calendar-grid");if(!title||!grid)return;
+ title.textContent=calendarViewMonth.getFullYear()+"年"+(calendarViewMonth.getMonth()+1)+"月";
+ grid.innerHTML="";
+ ["日","月","火","水","木","金","土"].forEach(day=>{const el=document.createElement("div");el.className="mini-calendar-day weekday";el.textContent=day;grid.appendChild(el);});
+ const first=new Date(calendarViewMonth.getFullYear(),calendarViewMonth.getMonth(),1);
+ const start=new Date(first);start.setDate(1-first.getDay());
+ const todayKey=dateKey(new Date()),selectedKey=dateKey(calendarSelectedDate);
+ const eventDays=new Set(calendarMonthEvents.map(e=>{const v=e.start?.dateTime||e.start?.date;return v?String(v).slice(0,10):"";}));
+ for(let i=0;i<42;i++){
+  const day=new Date(start);day.setDate(start.getDate()+i);const key=dateKey(day);
+  const el=document.createElement("button");el.type="button";el.className="mini-calendar-day";el.textContent=day.getDate();
+  if(day.getMonth()!==calendarViewMonth.getMonth())el.classList.add("other-month");
+  if(key===todayKey)el.classList.add("today");if(key===selectedKey)el.classList.add("selected");if(eventDays.has(key))el.classList.add("has-event");
+  el.setAttribute("aria-label",day.getFullYear()+"年"+(day.getMonth()+1)+"月"+day.getDate()+"日");
+  el.addEventListener("click",()=>selectCalendarDate(day));grid.appendChild(el);
+ }
+}
+async function loadCalendarMonth(){
+ const first=new Date(calendarViewMonth.getFullYear(),calendarViewMonth.getMonth(),1);
+ const last=new Date(calendarViewMonth.getFullYear(),calendarViewMonth.getMonth()+1,1);
+ const data=await calendarFetch("/api/calendar?timeMin="+encodeURIComponent(first.toISOString())+"&timeMax="+encodeURIComponent(last.toISOString()));
+ calendarMonthEvents=data.events||[];renderMiniCalendar();
+}
+async function selectCalendarDate(date){
+ calendarSelectedDate=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+ if(calendarViewMonth.getMonth()!==date.getMonth()||calendarViewMonth.getFullYear()!==date.getFullYear())calendarViewMonth=new Date(date.getFullYear(),date.getMonth(),1);
+ renderMiniCalendar();
+ try{
+  const start=new Date(calendarSelectedDate);const end=new Date(start);end.setDate(end.getDate()+1);
+  const data=await calendarFetch("/api/calendar?timeMin="+encodeURIComponent(start.toISOString())+"&timeMax="+encodeURIComponent(end.toISOString()));
+  renderCalendarEvents(data.events||[]);
+  const label=(date.getMonth()+1)+"月"+date.getDate()+"日";
+  $("calendar-top-events").textContent=label+"の予定："+((data.events||[]).length?(data.events||[]).map(e=>{const t=e.start?.dateTime?new Date(e.start.dateTime).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}):"終日";return t+" "+(e.summary||"予定");}).join(" ／ "):"予定はありません");
+ }catch(error){$("calendar-top-events").textContent="取得エラー："+error.message;}
+}
+$("mini-calendar-prev")?.addEventListener("click",async()=>{calendarViewMonth.setMonth(calendarViewMonth.getMonth()-1);renderMiniCalendar();try{await loadCalendarMonth();}catch(error){$("calendar-top-events").textContent="取得エラー："+error.message;}});
+$("mini-calendar-next")?.addEventListener("click",async()=>{calendarViewMonth.setMonth(calendarViewMonth.getMonth()+1);renderMiniCalendar();try{await loadCalendarMonth();}catch(error){$("calendar-top-events").textContent="取得エラー："+error.message;}});
+$("mini-calendar-today")?.addEventListener("click",()=>{const today=new Date();calendarViewMonth=new Date(today.getFullYear(),today.getMonth(),1);selectCalendarDate(today);loadCalendarMonth().catch(error=>{$("calendar-top-events").textContent="取得エラー："+error.message;});});
+renderMiniCalendar();
+
 function renderCalendarEvents(events){
  const target=$("calendar-events");
  const topTarget=$("calendar-top-events");
