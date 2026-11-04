@@ -1057,7 +1057,7 @@ function renderMiniCalendar(){
  const first=new Date(calendarViewMonth.getFullYear(),calendarViewMonth.getMonth(),1);
  const start=new Date(first);start.setDate(1-first.getDay());
  const todayKey=dateKey(new Date()),selectedKey=dateKey(calendarSelectedDate);
- const eventDays=new Set(calendarMonthEvents.map(e=>{const v=e.start?.dateTime||e.start?.date;return v?String(v).slice(0,10):"";}));
+ const eventDays=new Set(calendarMonthEvents.map(e=>{const dateTime=e.start?.dateTime;if(dateTime){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date(dateTime));const p=Object.fromEntries(parts.map(part=>[part.type,part.value]));return p.year+"-"+p.month+"-"+p.day;}const allDay=e.start?.date;return allDay?String(allDay).slice(0,10):"";}));
  for(let i=0;i<42;i++){
   const day=new Date(start);day.setDate(start.getDate()+i);const key=dateKey(day);
   const el=document.createElement("button");el.type="button";el.className="mini-calendar-day";el.textContent=day.getDate();
