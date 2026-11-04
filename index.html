@@ -441,7 +441,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 
 /* MONTHLY SCHEDULE CALENDAR */
 .calendar-quick-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.mini-calendar{margin-top:14px;padding-top:12px;border-top:1px solid #1b4057}
+.mini-calendar{width:50%;max-width:520px;margin:14px 0 0 auto;padding-top:8px;border-top:1px solid #1b4057}.mini-calendar-grid{gap:3px}.mini-calendar-day{min-height:24px;font-size:10px;border-radius:4px}.mini-calendar-day.weekday{min-height:16px;font-size:8px}.mini-calendar-day.has-event:after{bottom:2px;width:3px;height:3px}
 .mini-calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .mini-calendar-head strong{font-size:13px;letter-spacing:1px;color:#dffaff}
 .mini-calendar-nav{display:flex;gap:6px}
@@ -456,7 +456,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 .mini-calendar-day.selected{background:linear-gradient(135deg,#075078,#123e72);border-color:#57eaff;box-shadow:0 0 12px #168cff45;color:#fff}
 .mini-calendar-day.has-event:after{content:"";position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:#58ffc2;box-shadow:0 0 6px #58ffc2}
 .mini-calendar-day:disabled{cursor:default}
-@media(max-width:700px){.calendar-quickbar{margin:9px 10px!important;padding:12px!important}.mini-calendar-grid{gap:3px}.mini-calendar-day{min-height:34px;font-size:10px}.calendar-quick-head>div:last-child{width:100%}.calendar-quick-head button{flex:1}}
+@media(max-width:700px){.calendar-quickbar{margin:9px 10px!important;padding:12px!important}.mini-calendar{width:100%;max-width:none;margin-left:0}.mini-calendar-grid{gap:3px}.mini-calendar-day{min-height:30px;font-size:10px}.calendar-quick-head>div:last-child{width:100%}.calendar-quick-head button{flex:1}}
 
 </style>
 </head>
