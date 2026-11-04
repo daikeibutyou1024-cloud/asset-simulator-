@@ -452,6 +452,18 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  </div>
 </header>
 
+<div class="calendar-quickbar panel" style="max-width:1500px;margin:12px auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+ <div style="min-width:180px;flex:1">
+  <div style="font-size:11px;letter-spacing:2px;color:#57eaff;font-weight:700">GOOGLE CALENDAR / SCHEDULE</div>
+  <div id="calendar-top-events" style="font-size:13px;color:#e6f8ff;margin-top:5px">今日の予定：未接続</div>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap">
+  <button class="btn" id="google-connect-top" type="button">Googleカレンダー接続</button>
+  <button class="btn-secondary" id="calendar-top-refresh" type="button">今日の予定</button>
+  <button class="btn-secondary" type="button" data-page="calendar">詳細</button>
+ </div>
+</div>
+
 <div class="shell">
  <section id="dashboard" class="page">
   <div class="heading">
@@ -530,12 +542,6 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
    <div class="panel metric"><div class="metric-label">LINK CLICKS</div><div class="metric-value" id="metric-clicks">0</div><div class="metric-note">概要欄・紹介リンクのクリック</div></div>
    <div class="panel metric"><div class="metric-label">CONVERSIONS</div><div class="metric-value green" id="metric-sales">0</div><div class="metric-note">アフィリエイト成果件数</div></div>
    <div class="panel metric"><div class="metric-label">MONTHLY GOAL</div><div class="metric-value amber" id="metric-goal">¥10,000</div><div class="metric-note" id="metric-progress">目標達成率 0%</div></div>
-  </div>
-
-  <div class="panel form-panel" style="margin-top:15px">
-   <div class="panel-title"><h3>GOOGLE CALENDAR</h3><span>PERSONAL SCHEDULE</span></div>
-   <p class="sub">音声で予定を登録し、「今日の予定は？」と聞くと読み上げます。</p>
-   <button class="btn" type="button" data-page="calendar">カレンダーを開く →</button>
   </div>
 
   <div class="lower">
@@ -945,13 +951,18 @@ function parseCalendarDate(text){
 }
 function renderCalendarEvents(events){
  const target=$("calendar-events");
- if(!events.length){target.textContent="この期間に予定はありません。";return;}
- target.textContent=events.map(event=>{
+ const topTarget=$("calendar-top-events");
+ const content=events.length?events.map(event=>{
   const start=event.start?.dateTime||event.start?.date||"";
   const end=event.end?.dateTime||event.end?.date||"";
   const format=value=>value.includes("T")?new Date(value).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):value;
   return format(start)+"  "+(event.summary||"（タイトルなし）")+(end?" ～ "+format(end):"");
- }).join("\n");
+ }).join("\n"):"この期間に予定はありません。";
+ if(target)target.textContent=content;
+ if(topTarget)topTarget.textContent="今日の予定："+(events.length?events.map(event=>{
+  const start=event.start?.dateTime?new Date(event.start.dateTime).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}):"終日";
+  return start+" "+(event.summary||"予定");
+ }).join(" ／ "):"予定はありません");
 }
 async function loadCalendarDay(offset=0){
  const day=new Date();day.setDate(day.getDate()+offset);
@@ -985,6 +996,24 @@ async function handleCalendarCommand(command){
  }
  return false;
 }
+async function startGoogleCalendarConnect(){
+ try{
+  const password=await getJarvisPassword();if(!password)return;
+  const response=await fetch("/api/google/connect",{headers:{"x-jarvis-password":password}});
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error||"Google接続を開始できません。");
+  window.location.href=data.url;
+ }catch(error){
+  const target=$("calendar-top-events");
+  if(target)target.textContent="接続エラー："+error.message;
+  const detail=$("calendar-events");
+  if(detail)detail.textContent="接続エラー："+error.message;
+ }
+}
+$("google-connect-top")?.addEventListener("click",startGoogleCalendarConnect);
+$("calendar-top-refresh")?.addEventListener("click",async()=>{
+ try{await loadCalendarDay(0);}catch(error){$("calendar-top-events").textContent="取得エラー："+error.message;}
+});
 $("google-connect")?.addEventListener("click",async()=>{
  try{
   const password=await getJarvisPassword();if(!password)return;
