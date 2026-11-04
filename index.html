@@ -1009,7 +1009,7 @@ function localIso(date,hour,minute){
 function calendarJapaneseNumber(value){
  const dayWords={"ついたち":1,"ふつか":2,"みっか":3,"よっか":4,"いつか":5,"むいか":6,"なのか":7,"ようか":8,"ここのか":9,"とおか":10};
  if(dayWords[value]!=null)return dayWords[value];
- if(/^\\d+$/.test(value))return Number(value);
+ if(/^\d+$/.test(value))return Number(value);
  const digits={"〇":0,"零":0,"一":1,"二":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9};
  if(value==="十")return 10;
  if(value.startsWith("十"))return 10+(digits[value.slice(1)]||0);
@@ -1020,7 +1020,7 @@ function normalizeCalendarSpeech(text){
  let value=String(text||"").replace(/[０-９]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xFEE0));
  const spoken={"じゅういちがつ":"11月","じゅうにがつ":"12月","じゅうがつ":"10月","じゅういちじ":"11時","じゅうにじ":"12時","じゅうさんじ":"13時","じゅうよじ":"14時","じゅうごじ":"15時","じゅうろくじ":"16時","じゅうしちじ":"17時","じゅうはちじ":"18時","じゅうくじ":"19時","にじゅうじ":"20時","むいか":"6日","ろくにち":"6日"};
  for(const [from,to] of Object.entries(spoken))value=value.replaceAll(from,to);
- return value.replace(/[、,。]/g," ").replace(/\\s+/g," ").trim();
+ return value.replace(/[、,。]/g," ").replace(/\s+/g," ").trim();
 }
 function parseCalendarDate(text){
  const now=new Date();
@@ -1109,7 +1109,7 @@ async function handleCalendarCommand(command){
  const normalized=normalizeCalendarSpeech(command);
  const asksSchedule=/(今日|明日|明後日).*(予定|スケジュール)|(予定|スケジュール).*(今日|明日|明後日)/.test(normalized);
  const date=parseCalendarDate(normalized);
- const time=normalized.match(/(午前|午後)?\\s*([0-9]{1,2})時(?:(\\d{1,2})分)?\\s*(?:から|〜|～|~|-|より)\\s*(午前|午後)?\\s*([0-9]{1,2})時(?:(\\d{1,2})分)?/);
+ const time=normalized.match(/(午前|午後)?\s*([0-9]{1,2})時(?:(\d{1,2})分)?\s*(?:から|〜|～|~|-|より)\s*(午前|午後)?\s*([0-9]{1,2})時(?:(\d{1,2})分)?/);
  if(asksSchedule){
   const offset=/明後日/.test(normalized)?2:/明日/.test(normalized)?1:0;
   const events=await loadCalendarDay(offset);
@@ -1127,7 +1127,7 @@ async function handleCalendarCommand(command){
   if(time[4]==="午後"&&endHour<12)endHour+=12;
   if(time[4]==="午前"&&endHour===12)endHour=0;
   if(startHour>23||endHour>24||startMinute>59||endMinute>59||endHour*60+endMinute<=startHour*60+startMinute)throw new Error("開始時刻と終了時刻を確認してください。");
-  const summary=normalized.replace(/([0-9]{1,2}|[一二三四五六七八九十〇零]+)月([0-9]{1,2}|[一二三四五六七八九十〇零]+|ついたち|ふつか|みっか|よっか|いつか|むいか|なのか|ようか|ここのか|とおか)日?/g,"").replace(/明後日|明日|今日/g,"").replace(/(午前|午後)?\\s*[0-9]{1,2}時(?:[0-9]{1,2}分)?\\s*(?:から|〜|～|~|-|より)\\s*(午前|午後)?\\s*[0-9]{1,2}時(?:[0-9]{1,2}分)?/,"").replace(/まで/g,"").trim()||"予定";
+  const summary=normalized.replace(/([0-9]{1,2}|[一二三四五六七八九十〇零]+)月([0-9]{1,2}|[一二三四五六七八九十〇零]+|ついたち|ふつか|みっか|よっか|いつか|むいか|なのか|ようか|ここのか|とおか)日?/g,"").replace(/明後日|明日|今日/g,"").replace(/(午前|午後)?\s*[0-9]{1,2}時(?:[0-9]{1,2}分)?\s*(?:から|〜|～|~|-|より)\s*(午前|午後)?\s*[0-9]{1,2}時(?:[0-9]{1,2}分)?/,"").replace(/まで/g,"").trim()||"予定";
   const result=await calendarFetch("/api/calendar",{method:"POST",body:JSON.stringify({summary,start:localIso(date,startHour,startMinute),end:localIso(date,endHour,endMinute)})});
   if(!result.event)throw new Error("Googleカレンダーから登録完了の確認が返りませんでした。");
   await loadCalendarMonth();
