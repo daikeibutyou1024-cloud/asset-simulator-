@@ -642,7 +642,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
   <div class="heading"><div><div class="kicker">PERSONAL SCHEDULE / 006</div><h2>Googleカレンダー</h2><div class="sub">J.A.R.V.I.S.に話しかけて予定を登録・確認できます。</div></div></div>
   <div class="panel form-panel">
    <div class="panel-title"><h3>GOOGLE CONNECTION</h3><span id="calendar-connection">STATUS UNKNOWN</span></div>
-   <p class="sub">初回のみGoogleアカウントへの接続許可が必要です。</p>
+   <p class="sub" id="calendar-connection-help">初回のみGoogleアカウントへの接続許可が必要です。</p>
    <button class="btn" id="google-connect" type="button">Googleカレンダーに接続</button>
    <button class="btn-secondary" id="calendar-refresh" type="button" style="margin-left:7px">今日の予定を更新</button>
   </div>
@@ -1053,7 +1053,7 @@ async function loadCalendarDay(offset=0){
 async function handleCalendarCommand(command){
  const asksSchedule=/(今日|明日|明後日).*(予定|スケジュール)|(予定|スケジュール).*(今日|明日|明後日)/.test(command);
  const date=parseCalendarDate(command);
- const time=command.match(/(\d{1,2})時(?:(\d{1,2})分)?\s*から\s*(\d{1,2})時(?:(\d{1,2})分)?/);
+ const time=command.match(/(\d{1,2})時(?:(\d{1,2})分)?\s*(?:から|〜|～|-)\s*(\d{1,2})時(?:(\d{1,2})分)?/);
  if(asksSchedule){
   const offset=/明後日/.test(command)?2:/明日/.test(command)?1:0;
   const events=await loadCalendarDay(offset);
@@ -1067,7 +1067,7 @@ async function handleCalendarCommand(command){
  if(date&&time){
   const startHour=Number(time[1]),startMinute=Number(time[2]||0),endHour=Number(time[3]),endMinute=Number(time[4]||0);
   if(startHour>23||endHour>24||startMinute>59||endMinute>59)throw new Error("時刻を確認してください。");
-  const summary=command.replace(/\d{1,2}月\d{1,2}日/g,"").replace(/明後日|明日|今日/g,"").replace(/\d{1,2}時(?:\d{1,2}分)?\s*から\s*\d{1,2}時(?:\d{1,2}分)?/,"").replace(/[、,。]/g," ").trim()||"予定";
+  const summary=command.replace(/\d{1,2}月\d{1,2}日/g,"").replace(/明後日|明日|今日/g,"").replace(/\d{1,2}時(?:\d{1,2}分)?\s*(?:から|〜|～|-)\s*\d{1,2}時(?:\d{1,2}分)?(?:まで)?/,"").replace(/まで/g,"").replace(/[、,。]/g," ").trim()||"予定";
   const result=await calendarFetch("/api/calendar",{method:"POST",body:JSON.stringify({summary,start:localIso(date,startHour,startMinute),end:localIso(date,endHour,endMinute)})});
   await loadCalendarMonth();
   await selectCalendarDate(date);
@@ -1106,6 +1106,28 @@ $("google-connect")?.addEventListener("click",async()=>{
 $("calendar-refresh")?.addEventListener("click",async()=>{
  try{const today=new Date();calendarViewMonth=new Date(today.getFullYear(),today.getMonth(),1);await loadCalendarMonth();await selectCalendarDate(today);$("calendar-connection").textContent="CONNECTED";}catch(error){$("calendar-events").textContent="エラー："+error.message;}
 });
+async function initializeCalendarConnection(){
+ const password=localStorage.getItem("jarvis_access_password");
+ if(!password)return;
+ try{
+  await loadCalendarMonth();
+  await selectCalendarDate(new Date());
+  const status=$("calendar-connection");
+  if(status)status.textContent="CONNECTED";
+  const help=$("calendar-connection-help");
+  if(help)help.textContent="Googleカレンダー接続済みです。次回から許可操作は不要です。";
+  const connect=$("google-connect");
+  if(connect)connect.style.display="none";
+  const topConnect=$("google-connect-top");
+  if(topConnect)topConnect.style.display="none";
+ }catch(error){
+  const status=$("calendar-connection");
+  if(status)status.textContent="接続確認が必要";
+  const top=$("calendar-top-events");
+  if(top)top.textContent="カレンダー確認エラー："+error.message;
+ }
+}
+initializeCalendarConnection();
 async function sendCommand(){
  const command=$("command").value.trim();
  if(!command)return;
