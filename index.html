@@ -1022,7 +1022,7 @@ function normalizeCalendarSpeech(text){
  for(const [from,to] of Object.entries(spoken))value=value.replaceAll(from,to);
  value=value.replace(/[一二三四五六七八九十〇零]+(?=月|日|時|分)/g,token=>String(calendarJapaneseNumber(token)));
  value=value.replace(/(午前|午後)\\s*/g,"$1");
- return value.replace(/[、,。]/g," ").replace(/\\s+/g," ").trim();
+ return value.replace(/[、,。]/g," ").replace(/\s+/g," ").trim();
 }
 function parseCalendarDate(text){
  const now=new Date();
