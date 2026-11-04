@@ -1069,6 +1069,8 @@ async function handleCalendarCommand(command){
   if(startHour>23||endHour>24||startMinute>59||endMinute>59)throw new Error("時刻を確認してください。");
   const summary=command.replace(/\d{1,2}月\d{1,2}日/g,"").replace(/明後日|明日|今日/g,"").replace(/\d{1,2}時(?:\d{1,2}分)?\s*から\s*\d{1,2}時(?:\d{1,2}分)?/,"").replace(/[、,。]/g," ").trim()||"予定";
   const result=await calendarFetch("/api/calendar",{method:"POST",body:JSON.stringify({summary,start:localIso(date,startHour,startMinute),end:localIso(date,endHour,endMinute)})});
+  await loadCalendarMonth();
+  await selectCalendarDate(date);
   const answer=(result.event?.summary||summary)+"をGoogleカレンダーに登録しました。";
   $("response").textContent=answer;speakAnswer(answer);log("予定をGoogleカレンダーに登録しました："+summary);return true;
  }
@@ -1090,7 +1092,7 @@ async function startGoogleCalendarConnect(){
 }
 $("google-connect-top")?.addEventListener("click",startGoogleCalendarConnect);
 $("calendar-top-refresh")?.addEventListener("click",async()=>{
- try{await loadCalendarDay(0);}catch(error){$("calendar-top-events").textContent="取得エラー："+error.message;}
+ try{const today=new Date();calendarViewMonth=new Date(today.getFullYear(),today.getMonth(),1);await loadCalendarMonth();await selectCalendarDate(today);}catch(error){$("calendar-top-events").textContent="取得エラー："+error.message;}
 });
 $("google-connect")?.addEventListener("click",async()=>{
  try{
@@ -1102,7 +1104,7 @@ $("google-connect")?.addEventListener("click",async()=>{
  }catch(error){$("calendar-events").textContent="エラー："+error.message;}
 });
 $("calendar-refresh")?.addEventListener("click",async()=>{
- try{await loadCalendarDay(0);$("calendar-connection").textContent="CONNECTED";}catch(error){$("calendar-events").textContent="エラー："+error.message;}
+ try{const today=new Date();calendarViewMonth=new Date(today.getFullYear(),today.getMonth(),1);await loadCalendarMonth();await selectCalendarDate(today);$("calendar-connection").textContent="CONNECTED";}catch(error){$("calendar-events").textContent="エラー："+error.message;}
 });
 async function sendCommand(){
  const command=$("command").value.trim();
