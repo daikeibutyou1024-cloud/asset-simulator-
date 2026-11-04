@@ -13,12 +13,15 @@ export function authorized(request, env) {
 }
 
 export function configError(env) {
-  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET ||
-      !env.GOOGLE_REDIRECT_URI || !env.JARVIS_TOKEN_ENCRYPTION_KEY ||
-      !env.JARVIS_DB) {
-    return "Google連携のCloudflare設定またはD1接続が不足しています。";
-  }
-  return "";
+  const missing = [];
+  if (!env.GOOGLE_CLIENT_ID) missing.push("GOOGLE_CLIENT_ID");
+  if (!env.GOOGLE_CLIENT_SECRET) missing.push("GOOGLE_CLIENT_SECRET");
+  if (!env.GOOGLE_REDIRECT_URI) missing.push("GOOGLE_REDIRECT_URI");
+  if (!env.JARVIS_TOKEN_ENCRYPTION_KEY) missing.push("JARVIS_TOKEN_ENCRYPTION_KEY");
+  if (!env.JARVIS_DB) missing.push("D1 binding JARVIS_DB");
+  return missing.length
+    ? "Cloudflareで未読込の設定があります：" + missing.join("、") + "。設定の保存後にPagesを再デプロイしてください。"
+    : "";
 }
 
 function encryptionKey(env) {
