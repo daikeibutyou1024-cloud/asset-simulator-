@@ -60,7 +60,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   border:1px solid #2b8a70;border-radius:20px;padding:8px 11px
 }
 .online i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;box-shadow:0 0 10px var(--green)}
-.clock{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.clock{font-size:24px;font-weight:700;letter-spacing:1.5px;color:var(--cyan);font-variant-numeric:tabular-nums;text-shadow:0 0 14px #35dfff55;white-space:nowrap;padding-left:18px;margin-left:6px;border-left:1px solid #24516d}
 .shell{max-width:1550px;margin:auto;padding:20px 22px 30px;position:relative;z-index:1}
 .heading{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:17px}
 .kicker{color:var(--cyan);font-size:10px;letter-spacing:3px}
@@ -267,7 +267,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 @media(max-width:700px){
  .topbar{padding:12px 13px}.brand h1{font-size:15px;letter-spacing:3px}
  .brand small{font-size:8px;letter-spacing:1px}.logo{width:36px;height:36px}
- .clock{display:none}.online{font-size:9px;padding:7px}
+ .clock{display:block;font-size:17px;letter-spacing:.5px;padding-left:10px;margin-left:2px}.online{font-size:9px;padding:7px}
  .shell{padding:15px 11px 25px}
  .heading{align-items:flex-start;flex-direction:column;gap:8px}
  h2{font-size:22px}.sub{font-size:11px}
@@ -516,9 +516,9 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  <div class="brand">
   <div class="logo">◈</div>
   <div><h1>J.A.R.V.I.S.</h1><small>AI BUSINESS COMMAND CENTER</small></div>
+  <div class="clock" id="clock">--:--:--</div>
  </div>
  <div class="top-right">
-  <div class="clock" id="clock">--:--:--</div>
   <div class="online"><i></i>INTERFACE ONLINE</div>
  </div>
 </header>
