@@ -939,7 +939,7 @@ function parseCalendarDate(text){
   const month=Number(match[1]),day=Number(match[2]);
   if(month<1||month>12||day<1||day>31)return null;
   date=new Date(year,month-1,day);
-  if(date.getTime()<new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime() && month<now.getMonth()+1)date.setFullYear(year+1);
+  if(date.getTime()<new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime())date.setFullYear(year+1);
  }
  return date;
 }
