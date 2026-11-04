@@ -1,8 +1,12 @@
 import { configError, encryptToken } from "./_shared.js";
 
+function escapeHtml(value) {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 function page(message, success = false) {
   const color = success ? "#58ffc2" : "#ff9b9b";
-  const html = `<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>J.A.R.V.I.S. Google連携</title><body style="margin:0;background:#030814;color:#e6f8ff;font-family:Arial,sans-serif;display:grid;place-items:center;min-height:100vh"><main style="max-width:560px;padding:28px;border:1px solid #24516d;border-radius:14px;background:#071629"><h2 style="color:${color}">J.A.R.V.I.S. Google連携</h2><p>${message}</p><p>この画面を閉じて、JARVISの司令室に戻ってください。</p></main></body></html>`;
+  const html = `<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>J.A.R.V.I.S. Google連携</title><body style="margin:0;background:#030814;color:#e6f8ff;font-family:Arial,sans-serif;display:grid;place-items:center;min-height:100vh"><main style="max-width:560px;padding:28px;border:1px solid #24516d;border-radius:14px;background:#071629"><h2 style="color:${color}">J.A.R.V.I.S. Google連携</h2><p>${escapeHtml(message)}</p><p>この画面を閉じて、JARVISの司令室に戻ってください。</p></main></body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
 }
 
