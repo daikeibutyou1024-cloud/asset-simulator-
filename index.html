@@ -61,6 +61,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 }
 .online i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;box-shadow:0 0 10px var(--green)}
 .clock{font-size:24px;font-weight:700;letter-spacing:1.5px;color:var(--cyan);font-variant-numeric:tabular-nums;text-shadow:0 0 14px #35dfff55;white-space:nowrap;padding-left:18px;margin-left:6px;border-left:1px solid #24516d}
+.header-schedule{min-width:190px;max-width:340px;padding-left:15px;border-left:1px solid #24516d}
+.header-schedule-label{font-size:9px;letter-spacing:1.5px;color:var(--cyan);font-weight:700}
+.header-schedule-event{font-size:11px;line-height:1.5;color:#e6f8ff;margin-top:4px;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:700px){.topbar{align-items:flex-start}.top-right{flex-wrap:wrap;justify-content:flex-end;gap:7px}.header-schedule{order:3;width:100%;max-width:260px;padding-left:9px}.header-schedule-label{font-size:8px}.header-schedule-event{font-size:10px}.clock{font-size:17px;padding-left:10px;margin-left:2px}}
 .shell{max-width:1550px;margin:auto;padding:20px 22px 30px;position:relative;z-index:1}
 .heading{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:17px}
 .kicker{color:var(--cyan);font-size:10px;letter-spacing:3px}
@@ -516,9 +520,13 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  <div class="brand">
   <div class="logo">◈</div>
   <div><h1>J.A.R.V.I.S.</h1><small>AI BUSINESS COMMAND CENTER</small></div>
-  <div class="clock" id="clock">--:--:--</div>
  </div>
  <div class="top-right">
+  <div class="clock" id="clock">--:--:--</div>
+  <div class="header-schedule">
+   <div class="header-schedule-label">GOOGLE CALENDAR / SCHEDULE</div>
+   <div class="header-schedule-event" id="header-calendar-events">今日の予定：読み込み中...</div>
+  </div>
   <div class="online"><i></i>INTERFACE ONLINE</div>
  </div>
 </header>
@@ -1071,7 +1079,7 @@ async function loadCalendarMonth(){
  const first=new Date(calendarViewMonth.getFullYear(),calendarViewMonth.getMonth(),1);
  const last=new Date(calendarViewMonth.getFullYear(),calendarViewMonth.getMonth()+1,1);
  const data=await calendarFetch("/api/calendar?timeMin="+encodeURIComponent(first.toISOString())+"&timeMax="+encodeURIComponent(last.toISOString()));
- calendarMonthEvents=data.events||[];renderMiniCalendar();
+ calendarMonthEvents=data.events||[];renderMiniCalendar();updateHeaderCalendarEvents(calendarMonthEvents.filter(event=>{const value=event.start?.dateTime;const day=value?new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(value)):event.start?.date;return day===dateKey(new Date());}));
 }
 async function selectCalendarDate(date){
  calendarSelectedDate=new Date(date.getFullYear(),date.getMonth(),date.getDate());
@@ -1224,12 +1232,26 @@ $("google-connect")?.addEventListener("click",async()=>{
 $("calendar-refresh")?.addEventListener("click",async()=>{
  try{const today=new Date();calendarViewMonth=new Date(today.getFullYear(),today.getMonth(),1);await loadCalendarMonth();await selectCalendarDate(today);$("calendar-connection").textContent="CONNECTED";}catch(error){$("calendar-events").textContent="エラー："+error.message;}
 });
+function updateHeaderCalendarEvents(events){
+ const target=$("header-calendar-events");if(!target)return;
+ if(!events||!events.length){target.textContent="今日の予定：予定はありません";return;}
+ target.textContent="今日の予定："+events.map(event=>{
+  const start=event.start?.dateTime?new Date(event.start.dateTime).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}):"終日";
+  const end=event.end?.dateTime?new Date(event.end.dateTime).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}):"";
+  return start+(end?"–"+end:"")+" "+(event.summary||"予定");
+ }).join(" ／ ");
+}
 async function initializeCalendarConnection(){
  const password=localStorage.getItem("jarvis_access_password");
  if(!password)return;
  try{
   await loadCalendarMonth();
   await selectCalendarDate(new Date());
+  updateHeaderCalendarEvents(calendarMonthEvents.filter(event=>{
+   const value=event.start?.dateTime;
+   const day=value?new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(value)):event.start?.date;
+   return day===dateKey(new Date());
+  }));
   const status=$("calendar-connection");
   if(status)status.textContent="CONNECTED";
   const help=$("calendar-connection-help");
