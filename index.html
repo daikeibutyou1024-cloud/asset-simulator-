@@ -458,6 +458,46 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 .mini-calendar-day:disabled{cursor:default}
 @media(max-width:700px){.calendar-quickbar{margin:9px 10px!important;padding:12px!important}.mini-calendar{width:100%;max-width:none;margin-left:0}.mini-calendar-grid{gap:3px}.mini-calendar-day{min-height:30px;font-size:10px}.calendar-quick-head>div:last-child{width:100%}.calendar-quick-head button{flex:1}}
 
+
+/* DASHBOARD CALENDAR BESIDE JARVIS CORE */
+.dashboard{
+ grid-template-columns:minmax(185px,.68fr) minmax(360px,1.28fr) minmax(215px,.72fr) minmax(250px,.9fr);
+ gap:12px;align-items:stretch;
+}
+.module-panel{grid-column:1;grid-row:1}
+.core-panel{grid-column:2;grid-row:1}
+.calendar-quickbar{
+ grid-column:3;grid-row:1;display:flex;flex-direction:column;gap:10px;
+ width:auto;max-width:none!important;min-width:0;margin:0!important;
+ padding:14px!important;align-self:stretch;
+}
+.calendar-quick-head{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.calendar-quick-head>div:first-child{min-width:0!important;flex:auto!important}
+.calendar-quick-head>div:last-child{display:grid!important;grid-template-columns:1fr 1fr;gap:6px!important}
+.calendar-quick-head>div:last-child button{min-width:0;padding:9px 6px;font-size:10px}
+.calendar-quick-head>div:last-child button:first-child{grid-column:1/-1}
+.mini-calendar{width:100%;max-width:none;margin:0;padding-top:10px}
+.mini-calendar-grid{gap:3px}
+.mini-calendar-day{min-height:29px;font-size:10px}
+.mini-calendar-day.weekday{min-height:18px;font-size:8px}
+.right-stack{grid-column:4;grid-row:1;grid-template-rows:auto auto}
+@media(max-width:1250px){
+ .dashboard{grid-template-columns:minmax(190px,.72fr) minmax(0,1.28fr)}
+ .module-panel{grid-column:1;grid-row:2}
+ .core-panel{grid-column:1;grid-row:1}
+ .calendar-quickbar{grid-column:1;grid-row:3}
+ .right-stack{grid-column:2;grid-row:1 / span 3}
+}
+@media(max-width:700px){
+ .dashboard{grid-template-columns:1fr}
+ .core-panel{grid-column:1;grid-row:1}
+ .calendar-quickbar{grid-column:1;grid-row:2}
+ .module-panel{grid-column:1;grid-row:3}
+ .right-stack{grid-column:1;grid-row:4}
+ .calendar-quick-head{align-items:stretch}
+ .mini-calendar-day{min-height:30px}
+}
+
 </style>
 </head>
 <body>
@@ -471,31 +511,6 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
   <div class="online"><i></i>INTERFACE ONLINE</div>
  </div>
 </header>
-
-<div class="calendar-quickbar panel" style="max-width:1500px;margin:12px auto;padding:14px 16px">
- <div class="calendar-quick-head">
-  <div style="min-width:180px;flex:1">
-   <div style="font-size:11px;letter-spacing:2px;color:#57eaff;font-weight:700">GOOGLE CALENDAR / SCHEDULE</div>
-   <div id="calendar-top-events" style="font-size:13px;color:#e6f8ff;margin-top:5px">今日の予定：未接続</div>
-  </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-   <button class="btn" id="google-connect-top" type="button">Googleカレンダー接続</button>
-   <button class="btn-secondary" id="calendar-top-refresh" type="button">今日の予定</button>
-   <button class="btn-secondary" type="button" data-page="calendar">詳細</button>
-  </div>
- </div>
- <div class="mini-calendar">
-  <div class="mini-calendar-head">
-   <strong id="mini-calendar-title">2026年11月</strong>
-   <div class="mini-calendar-nav">
-    <button type="button" id="mini-calendar-prev" aria-label="前の月">‹</button>
-    <button type="button" id="mini-calendar-today">今日</button>
-    <button type="button" id="mini-calendar-next" aria-label="次の月">›</button>
-   </div>
-  </div>
-  <div class="mini-calendar-grid" id="mini-calendar-grid" aria-label="月間カレンダー"></div>
- </div>
-</div>
 
 <div class="shell">
  <section id="dashboard" class="page">
@@ -536,6 +551,31 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
     </div>
     <div class="response" id="response" aria-live="polite"></div>
    </div>
+
+   <div class="calendar-quickbar panel" style="max-width:1500px;margin:12px auto;padding:14px 16px">
+ <div class="calendar-quick-head">
+  <div style="min-width:180px;flex:1">
+   <div style="font-size:11px;letter-spacing:2px;color:#57eaff;font-weight:700">GOOGLE CALENDAR / SCHEDULE</div>
+   <div id="calendar-top-events" style="font-size:13px;color:#e6f8ff;margin-top:5px">今日の予定：未接続</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+   <button class="btn" id="google-connect-top" type="button">Googleカレンダー接続</button>
+   <button class="btn-secondary" id="calendar-top-refresh" type="button">今日の予定</button>
+   <button class="btn-secondary" type="button" data-page="calendar">詳細</button>
+  </div>
+ </div>
+ <div class="mini-calendar">
+  <div class="mini-calendar-head">
+   <strong id="mini-calendar-title">2026年11月</strong>
+   <div class="mini-calendar-nav">
+    <button type="button" id="mini-calendar-prev" aria-label="前の月">‹</button>
+    <button type="button" id="mini-calendar-today">今日</button>
+    <button type="button" id="mini-calendar-next" aria-label="次の月">›</button>
+   </div>
+  </div>
+  <div class="mini-calendar-grid" id="mini-calendar-grid" aria-label="月間カレンダー"></div>
+ </div>
+</div>
 
    <div class="right-stack">
     <div class="panel">
