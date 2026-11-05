@@ -539,6 +539,28 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  .weather-details{width:100%}
 }
 
+
+/* HOURLY WEATHER */
+.hourly-weather{
+ margin:0 0 16px;padding:13px 15px 14px;
+ border:1px solid rgba(60,198,255,.22);border-radius:12px;
+ background:linear-gradient(110deg,rgba(6,23,42,.94),rgba(4,13,28,.92));
+}
+.hourly-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+.hourly-title{font-size:10px;letter-spacing:1.8px;color:var(--cyan);font-weight:700}
+.hourly-caption{font-size:9px;color:var(--muted)}
+.hourly-list{display:flex;gap:9px;overflow-x:auto;padding:2px 1px 7px;scrollbar-width:thin;scrollbar-color:#24516d transparent}
+.hourly-item{
+ flex:0 0 76px;display:flex;flex-direction:column;align-items:center;gap:7px;
+ padding:10px 6px;border:1px solid #173b54;border-radius:9px;background:#061425;
+}
+.hourly-item.now{border-color:#57eaff88;background:#0b2940;box-shadow:inset 0 0 13px #168cff18}
+.hourly-time{font-size:10px;color:#b7d0e3;font-weight:700}
+.hourly-icon{font-size:21px;line-height:1.2}
+.hourly-temp{font-size:17px;color:#e6f8ff;font-weight:700}
+.hourly-rain{font-size:9px;color:#82cfff;white-space:nowrap}
+.hourly-empty{font-size:10px;color:var(--muted);padding:12px 2px}
+
 </style>
 </head>
 <body>
@@ -580,6 +602,11 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
     <span class="weather-details" id="weather-details">最高 --° / 最低 --° · 降水確率 --%</span>
    </div>
    <div class="weather-status" id="weather-status">WEATHER LOADING</div>
+  </div>
+
+  <div class="hourly-weather" id="hourly-weather">
+   <div class="hourly-heading"><div class="hourly-title">HOURLY FORECAST</div><div class="hourly-caption">これからの時間ごとの予報</div></div>
+   <div class="hourly-list" id="hourly-weather-list"><div class="hourly-empty">時間別予報を取得しています...</div></div>
   </div>
 
   <div class="dashboard">
@@ -1353,10 +1380,47 @@ $("send-command").addEventListener("click",sendCommand);
 $("command").addEventListener("keydown",e=>{if(e.key==="Enter")sendCommand()});
 
 
+
+function weatherForCode(code){
+ const weather={
+  0:["☀️","快晴"],1:["🌤️","晴れ"],2:["⛅","晴れ時々くもり"],3:["☁️","くもり"],
+  45:["🌫️","霧"],48:["🌫️","霧"],51:["🌦️","霧雨"],53:["🌦️","霧雨"],55:["🌧️","強い霧雨"],
+  56:["🌧️","凍る霧雨"],57:["🌧️","凍る霧雨"],61:["🌧️","弱い雨"],63:["🌧️","雨"],65:["🌧️","大雨"],
+  66:["🌧️","凍雨"],67:["🌧️","強い凍雨"],71:["🌨️","弱い雪"],73:["❄️","雪"],75:["❄️","大雪"],
+  77:["❄️","雪"],80:["🌦️","にわか雨"],81:["🌧️","雨"],82:["⛈️","激しい雨"],
+  85:["🌨️","にわか雪"],86:["❄️","強い雪"],95:["⛈️","雷雨"],96:["⛈️","ひょう"],99:["⛈️","強い雷雨"]
+ };
+ return weather[Number(code)]||["🌡️","天気"];
+}
+function renderHourlyWeather(hourly){
+ const list=$("hourly-weather-list");
+ if(!list||!hourly?.time?.length)return;
+ list.textContent="";
+ const now=new Date();
+ const currentHour=new Date(now);currentHour.setMinutes(0,0,0);
+ const times=hourly.time.map((value,index)=>({value,index,date:new Date(value)}));
+ let start=times.findIndex(item=>item.date>=currentHour);
+ if(start<0)start=0;
+ times.slice(start,start+12).forEach((item,position)=>{
+  const i=item.index;
+  const [icon]=weatherForCode(hourly.weather_code[i]);
+  const card=document.createElement("div");
+  card.className="hourly-item"+(position===0?" now":"");
+  const time=document.createElement("div");time.className="hourly-time";
+  time.textContent=position===0?"今 "+item.date.toLocaleTimeString("ja-JP",{hour:"2-digit"}):item.date.toLocaleTimeString("ja-JP",{hour:"2-digit"});
+  const symbol=document.createElement("div");symbol.className="hourly-icon";symbol.textContent=icon;
+  const temp=document.createElement("div");temp.className="hourly-temp";temp.textContent=Math.round(hourly.temperature_2m[i])+"°";
+  const rain=document.createElement("div");rain.className="hourly-rain";
+  const probability=hourly.precipitation_probability?.[i];
+  rain.textContent="☂ "+(probability==null?"--":probability)+"%";
+  card.append(time,symbol,temp,rain);list.appendChild(card);
+ });
+}
+
 async function loadTodayWeather(){
  const status=$("weather-status");
  try{
-  const url="https://api.open-meteo.com/v1/forecast?latitude=36.6953&longitude=137.2113&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone=Asia%2FTokyo";
+  const url="https://api.open-meteo.com/v1/forecast?latitude=36.6953&longitude=137.2113&current=temperature_2m,weather_code&hourly=temperature_2m,weather_code,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=2&timezone=Asia%2FTokyo";
   const response=await fetch(url,{cache:"no-store"});
   if(!response.ok)throw new Error("weather request failed");
   const data=await response.json();
@@ -1373,6 +1437,7 @@ async function loadTodayWeather(){
   $("weather-symbol").textContent=symbol;
   $("weather-temp").textContent=Math.round(data.current.temperature_2m)+"°C";
   $("weather-desc").textContent=description;
+  renderHourlyWeather(data.hourly);
   const daily=data.daily;
   const max=Math.round(daily.temperature_2m_max[0]);
   const min=Math.round(daily.temperature_2m_min[0]);
