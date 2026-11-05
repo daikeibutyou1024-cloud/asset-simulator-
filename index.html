@@ -1261,6 +1261,26 @@ function addSecretaryHistory(userText,assistantText){
  history.push({role:"user",content:userText},{role:"assistant",content:assistantText});
  setSecretaryHistory(history);
 }
+function appendSecretarySavedItems(target){
+ const toggle=document.createElement("button");toggle.type="button";toggle.className="btn-secondary";toggle.style.cssText="display:block;margin-top:12px";toggle.textContent="保存済みの内容を確認";
+ const panel=document.createElement("div");panel.style.cssText="display:none;margin-top:10px;padding:10px;border:1px solid #24516d;border-radius:8px;background:#061525";
+ toggle.addEventListener("click",()=>{
+  const opening=panel.style.display==="none";panel.style.display=opening?"block":"none";toggle.textContent=opening?"保存済みの内容を閉じる":"保存済みの内容を確認";
+  if(!opening)return;
+  panel.textContent="";
+  let items=[];try{items=JSON.parse(localStorage.getItem("jarvis_personal_items")||"[]");}catch{}
+  if(!items.length){panel.textContent="保存されたタスク・リマインダー・メモはありません。";return;}
+  items.slice().reverse().forEach(item=>{
+   const row=document.createElement("div");row.style.cssText="padding:8px 0;border-bottom:1px solid #153b54";
+   const title=document.createElement("div");title.style.cssText="font-size:11px;color:#dffaff";title.textContent=(item.kind==="task"?"TASK":item.kind==="reminder"?"REMINDER":"MEMO")+" · "+(item.title||item.detail||"内容なし");
+   const detail=document.createElement("div");detail.style.cssText="font-size:10px;color:#8faec5;margin-top:4px";detail.textContent=[item.detail,item.due_at].filter(Boolean).join(" ／ ");
+   const remove=document.createElement("button");remove.type="button";remove.className="btn-secondary";remove.style.cssText="margin-top:6px;padding:5px 8px;font-size:9px";remove.textContent="削除";
+   remove.addEventListener("click",()=>{const current=JSON.parse(localStorage.getItem("jarvis_personal_items")||"[]").filter(entry=>entry.id!==item.id);localStorage.setItem("jarvis_personal_items",JSON.stringify(current));row.remove();if(!panel.children.length)panel.textContent="保存された内容はありません。";});
+   row.append(title,detail,remove);panel.appendChild(row);
+  });
+ });
+ target.append(toggle,panel);
+}
 function renderSecretaryAction(result,command){
  const target=$("response");
  target.textContent=result.reply||"内容を確認しました。";
@@ -1301,6 +1321,7 @@ function renderSecretaryAction(result,command){
   });
   target.appendChild(document.createElement("br"));target.appendChild(button);
  }
+ appendSecretarySavedItems(target);
 }
 async function checkSecretaryReminders(){
  try{
