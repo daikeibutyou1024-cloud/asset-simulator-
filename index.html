@@ -688,6 +688,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
     </div>
     <div class="command-row">
+     <button class="voice-btn" id="mic-command" type="button" aria-label="音声入力を開始" aria-pressed="false" title="マイクで音声入力">🎙️</button>
      <input id="command" placeholder="司令室への指示を入力..." aria-label="司令室への指示">
      <button class="btn" id="send-command">送信</button>
     </div>
@@ -973,6 +974,13 @@ function setListening(active){
  $("orb-voice").classList.toggle("listening",active);
  $("orb-voice").setAttribute("aria-pressed",String(active));
  $("orb-voice").title=active?"球体を押して音声入力を停止":"球体を押して音声入力";
+ const micButton=$("mic-command");
+ if(micButton){
+  micButton.classList.toggle("listening",active);
+  micButton.setAttribute("aria-pressed",String(active));
+  micButton.setAttribute("aria-label",active?"音声入力を停止":"音声入力を開始");
+  micButton.title=active?"音声入力を停止":"マイクで音声入力";
+ }
  if(active){
   $("orb-status").textContent="LISTENING · お話しください";
   $("equalizer").classList.remove("paused");
@@ -1022,6 +1030,10 @@ document.addEventListener("click",event=>{
   startVoiceInput();
  }
 },true);
+$("mic-command").addEventListener("click",()=>{
+ if(isListening){try{recognition.stop()}catch(error){};setListening(false);}
+ else startVoiceInput();
+});
 $("orb-voice").addEventListener("keydown",event=>{
  if(event.key==="Enter"||event.key===" "){
   event.preventDefault();
