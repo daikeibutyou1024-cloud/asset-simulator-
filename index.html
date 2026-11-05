@@ -561,7 +561,24 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 .hourly-rain{font-size:9px;color:#82cfff;white-space:nowrap}
 .hourly-empty{font-size:10px;color:var(--muted);padding:12px 2px}
 
+
+/* RAIN RADAR */
+.rain-radar-panel{margin:0 0 16px;padding:14px;border:1px solid rgba(60,198,255,.24);border-radius:12px;background:linear-gradient(110deg,rgba(6,23,42,.96),rgba(4,13,28,.94))}
+.rain-radar-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.rain-radar-title{font-size:10px;letter-spacing:1.8px;color:var(--cyan);font-weight:700}
+.rain-radar-caption{font-size:9px;color:var(--muted)}
+#rain-radar-map{height:310px;width:100%;border:1px solid #1a4059;border-radius:9px;overflow:hidden;background:#071526;z-index:1}
+.rain-radar-controls{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.rain-radar-button{border:1px solid #28617d;background:#0a2940;color:#c9f5ff;border-radius:7px;padding:7px 12px;font:inherit;font-size:10px;cursor:pointer}
+.rain-radar-button:hover{background:#10405d}
+#rain-radar-range{flex:1;min-width:130px;accent-color:#57eaff}
+.rain-radar-time{font-size:10px;color:#c5e8f5;min-width:112px;text-align:right}
+.rain-radar-status{font-size:9px;color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.rain-radar-credit a{color:#82cfff}
+@media(max-width:700px){#rain-radar-map{height:260px}.rain-radar-head{align-items:flex-start;flex-direction:column}.rain-radar-time{min-width:95px}}
+
 </style>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 </head>
 <body>
 <header class="topbar">
@@ -608,6 +625,26 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
    <div class="hourly-heading"><div class="hourly-title">HOURLY FORECAST</div><div class="hourly-caption">これからの時間ごとの予報</div></div>
    <div class="hourly-list" id="hourly-weather-list"><div class="hourly-empty">時間別予報を取得しています...</div></div>
   </div>
+
+
+  <div class="rain-radar-panel" id="rain-radar-panel">
+   <div class="rain-radar-head">
+    <div class="rain-radar-title">RAIN CLOUD RADAR</div>
+    <div class="rain-radar-caption">富山周辺 · 直近約2時間の雨雲</div>
+   </div>
+   <div id="rain-radar-map" aria-label="富山周辺の雨雲レーダー地図"></div>
+   <div class="rain-radar-controls">
+    <button class="rain-radar-button" id="rain-radar-play" type="button">▶ 再生</button>
+    <input id="rain-radar-range" type="range" min="0" max="0" value="0" step="1" aria-label="雨雲レーダーの時刻">
+    <span class="rain-radar-time" id="rain-radar-time">--:--</span>
+    <button class="rain-radar-button" id="rain-radar-refresh" type="button">更新</button>
+   </div>
+   <div class="rain-radar-status">
+    <span id="rain-radar-status">レーダーを読み込んでいます...</span>
+    <span class="rain-radar-credit">Weather data by <a href="https://www.rainviewer.com/" target="_blank" rel="noopener noreferrer">RainViewer</a> · Map © OpenStreetMap</span>
+   </div>
+  </div>
+
 
   <div class="dashboard">
    <div class="panel module-panel">
@@ -787,6 +824,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  <footer class="footer">J.A.R.V.I.S. · PERSONAL AI COMMAND CENTER</footer>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -1452,6 +1490,88 @@ async function loadTodayWeather(){
 }
 loadTodayWeather();
 setInterval(loadTodayWeather,30*60*1000);
+
+
+/* RAIN RADAR - RainViewer public historical radar frames */
+let rainRadarMap = null;
+let rainRadarLayers = [];
+let rainRadarFrames = [];
+let rainRadarTimer = null;
+let rainRadarIndex = 0;
+
+function setRainRadarFrame(index) {
+ const range = $("rain-radar-range");
+ if (!rainRadarFrames.length) return;
+ rainRadarIndex = Math.max(0, Math.min(index, rainRadarFrames.length - 1));
+ rainRadarLayers.forEach((layer, i) => layer.setOpacity(i === rainRadarIndex ? 0.72 : 0));
+ range.value = String(rainRadarIndex);
+ const frame = rainRadarFrames[rainRadarIndex];
+ $("rain-radar-time").textContent = new Date(frame.time * 1000).toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});
+}
+
+function stopRainRadar() {
+ if (rainRadarTimer) clearInterval(rainRadarTimer);
+ rainRadarTimer = null;
+ $("rain-radar-play").textContent = "▶ 再生";
+}
+
+function startRainRadar() {
+ if (rainRadarFrames.length < 2) return;
+ stopRainRadar();
+ $("rain-radar-play").textContent = "Ⅱ 停止";
+ rainRadarTimer = setInterval(() => {
+  const next = (rainRadarIndex + 1) % rainRadarFrames.length;
+  setRainRadarFrame(next);
+ }, 750);
+}
+
+async function loadRainRadar() {
+ const status = $("rain-radar-status");
+ status.textContent = "レーダー情報を取得中...";
+ try {
+  if (!window.L) throw new Error("地図ライブラリを読み込めません");
+  if (!rainRadarMap) {
+   rainRadarMap = L.map("rain-radar-map", {scrollWheelZoom:false}).setView([36.6953,137.2113],8);
+   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom:18, attribution:"&copy; OpenStreetMap contributors"
+   }).addTo(rainRadarMap);
+  }
+  const response = await fetch("https://api.rainviewer.com/public/weather-maps.json",{cache:"no-store"});
+  if (!response.ok) throw new Error("レーダー情報を取得できません");
+  const data = await response.json();
+  const frames = data.radar && data.radar.past ? data.radar.past : [];
+  if (!frames.length) throw new Error("利用できる雨雲データがありません");
+  stopRainRadar();
+  rainRadarLayers.forEach(layer => rainRadarMap.removeLayer(layer));
+  rainRadarFrames = frames;
+  rainRadarLayers = frames.map(frame => L.tileLayer(
+   data.host + frame.path + "/256/{z}/{x}/{y}/2/1_1.png",
+   {opacity:0,maxNativeZoom:7,tileSize:256,attribution:"Weather data by RainViewer"}
+  ).addTo(rainRadarMap));
+  const range = $("rain-radar-range");
+  range.min = "0";
+  range.max = String(frames.length - 1);
+  range.value = String(frames.length - 1);
+  setRainRadarFrame(frames.length - 1);
+  const latest = new Date(frames[frames.length - 1].time * 1000);
+  status.textContent = "最新データ " + latest.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}) + " · 約10分間隔";
+  setTimeout(() => rainRadarMap && rainRadarMap.invalidateSize(), 100);
+ } catch (error) {
+  status.textContent = "レーダーを表示できません。時間をおいて更新してください。";
+ }
+}
+
+$("rain-radar-play").addEventListener("click", () => {
+ if (rainRadarTimer) stopRainRadar();
+ else startRainRadar();
+});
+$("rain-radar-range").addEventListener("input", event => {
+ stopRainRadar();
+ setRainRadarFrame(Number(event.target.value));
+});
+$("rain-radar-refresh").addEventListener("click", loadRainRadar);
+loadRainRadar();
+setInterval(loadRainRadar,10*60*1000);
 
 function updateClock(){
  $("clock").textContent=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
