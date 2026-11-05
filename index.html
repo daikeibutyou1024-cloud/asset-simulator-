@@ -1297,10 +1297,11 @@ function renderSecretaryAction(result,command){
     const items=JSON.parse(localStorage.getItem("jarvis_personal_items")||"[]");
     items.push({id:crypto.randomUUID(),kind:result.kind,title:result.title||result.detail,detail:result.detail||"",due_at:result.due_at||"",created_at:new Date().toISOString(),notified:false});
     localStorage.setItem("jarvis_personal_items",JSON.stringify(items));
+    button.disabled=true;
     const done=(result.title||"内容")+"を"+(result.kind==="task"?"タスク":result.kind==="reminder"?"リマインダー":"メモ")+"として保存しました。";
     target.textContent=done;
     if(result.kind==="reminder")target.append(" この端末でJ.A.R.V.I.S.を開いている間に、指定時刻を過ぎると音声でお知らせします。");
-    speakAnswer(done);addSecretaryHistory("保存しました。",done);log(done);
+    speakAnswer(done);addSecretaryHistory("保存しました。",done);appendSecretarySavedItems(target);log(done);
    }catch(error){target.textContent="保存できませんでした："+error.message;}
   });
   target.appendChild(document.createElement("br"));target.appendChild(button);
