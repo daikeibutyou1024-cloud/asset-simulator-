@@ -1181,11 +1181,7 @@ async function handleCalendarCommand(command){
   const answer=(result.event.summary||summary)+"をGoogleカレンダーに登録しました。";
   $("response").textContent=answer;speakAnswer(answer);log("Googleカレンダーに登録："+dateKey(date)+" "+summary+" "+startHour+":"+String(startMinute).padStart(2,"0")+"-"+endHour+":"+String(endMinute).padStart(2,"0"));return true;
  }
- // 日付と時刻が含まれる登録指示を、Claudeへの通常質問として誤送信しない
- if(date&&/(仕事|勤務|予定|会議|休み|出勤)/.test(normalized)){
-  const message="予定登録として受け取りました。開始時刻と終了時刻を「11時から18時」のように伝えてください。";
-  $("response").textContent=message;speakAnswer(message);return true;
- }
+ // 日付だけ・時刻だけなど情報が不足する発言は、AI秘書に会話の流れごと判断させる
  return false;
 }
 async function startGoogleCalendarConnect(){
@@ -1254,6 +1250,76 @@ async function initializeCalendarConnection(){
  }
 }
 initializeCalendarConnection();
+function getSecretaryHistory(){
+ try{return JSON.parse(localStorage.getItem("jarvis_secretary_history")||"[]");}catch{return [];}
+}
+function setSecretaryHistory(history){
+ localStorage.setItem("jarvis_secretary_history",JSON.stringify(history.slice(-10)));
+}
+function addSecretaryHistory(userText,assistantText){
+ const history=getSecretaryHistory();
+ history.push({role:"user",content:userText},{role:"assistant",content:assistantText});
+ setSecretaryHistory(history);
+}
+function renderSecretaryAction(result,command){
+ const target=$("response");
+ target.textContent=result.reply||"内容を確認しました。";
+ if(result.ready_to_save&&result.kind==="calendar"){
+  const details=[result.date,result.start_time+"〜"+result.end_time,result.title].filter(Boolean).join(" ／ ");
+  const info=document.createElement("div");info.style.cssText="margin-top:10px;color:#8feaff;font-size:11px";info.textContent="登録内容の確認："+details;target.appendChild(info);
+  const button=document.createElement("button");button.type="button";button.className="btn";button.style.marginTop="10px";button.textContent="Googleカレンダーに登録";
+  button.addEventListener("click",async()=>{
+   button.disabled=true;button.textContent="登録中…";
+   try{
+    const start=new Date(result.date+"T"+result.start_time+":00+09:00");
+    const end=new Date(result.date+"T"+result.end_time+":00+09:00");
+    if(!result.date||Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<=start)throw new Error("日付と開始・終了時刻を確認してください。");
+    const saved=await calendarFetch("/api/calendar",{method:"POST",body:JSON.stringify({summary:result.title||"予定",start:start.toISOString(),end:end.toISOString(),description:result.detail||""})});
+    if(!saved.event)throw new Error("登録結果を確認できませんでした。");
+    const done=(saved.event.summary||result.title)+"をGoogleカレンダーに登録しました。";
+    target.textContent=done;speakAnswer(done);addSecretaryHistory("Googleカレンダーに登録しました。",done);
+    await loadCalendarMonth();await selectCalendarDate(new Date(result.date+"T00:00:00+09:00"));
+    log("会話判別からGoogleカレンダーに登録："+(saved.event.summary||result.title));
+   }catch(error){button.disabled=false;button.textContent="Googleカレンダーに登録";const message=document.createElement("div");message.style.color="#ffb4b4";message.textContent="登録できませんでした："+error.message;target.appendChild(message);}
+  });
+  target.appendChild(document.createElement("br"));target.appendChild(button);
+ }else if(result.ready_to_save&&["task","reminder","memory"].includes(result.kind)){
+  const labels={task:"タスクとして保存",reminder:"リマインダーとして保存",memory:"メモとして保存"};
+  const info=document.createElement("div");info.style.cssText="margin-top:9px;color:#8feaff;font-size:10px";info.textContent=result.kind==="reminder"?"通知日時："+(result.due_at||"未設定"):result.kind==="task"?"保存先：この端末のJ.A.R.V.I.S.":"保存先：この端末のJ.A.R.V.I.S.";
+  target.appendChild(info);
+  const button=document.createElement("button");button.type="button";button.className="btn";button.style.marginTop="10px";button.textContent=labels[result.kind];
+  button.addEventListener("click",()=>{
+   try{
+    const items=JSON.parse(localStorage.getItem("jarvis_personal_items")||"[]");
+    items.push({id:crypto.randomUUID(),kind:result.kind,title:result.title||result.detail,detail:result.detail||"",due_at:result.due_at||"",created_at:new Date().toISOString(),notified:false});
+    localStorage.setItem("jarvis_personal_items",JSON.stringify(items));
+    const done=(result.title||"内容")+"を"+(result.kind==="task"?"タスク":result.kind==="reminder"?"リマインダー":"メモ")+"として保存しました。";
+    target.textContent=done;
+    if(result.kind==="reminder")target.append(" この端末でJ.A.R.V.I.S.を開いている間に、指定時刻を過ぎると音声でお知らせします。");
+    speakAnswer(done);addSecretaryHistory("保存しました。",done);log(done);
+   }catch(error){target.textContent="保存できませんでした："+error.message;}
+  });
+  target.appendChild(document.createElement("br"));target.appendChild(button);
+ }
+}
+async function checkSecretaryReminders(){
+ try{
+  const items=JSON.parse(localStorage.getItem("jarvis_personal_items")||"[]");
+  const now=Date.now();let changed=false;
+  for(const item of items){
+   if(item.kind!=="reminder"||!item.due_at||item.notified)continue;
+   const due=new Date(item.due_at).getTime();
+   if(Number.isFinite(due)&&due<=now){
+    item.notified=true;item.notified_at=new Date().toISOString();changed=true;
+    const message="リマインダーです。"+(item.title||item.detail||"登録した内容")+"の時間です。";
+    $("response").textContent=message;speakAnswer(message);log(message);
+   }
+  }
+  if(changed)localStorage.setItem("jarvis_personal_items",JSON.stringify(items));
+ }catch(error){/* 保存データが読めない場合は通常会話を妨げない */}
+}
+setInterval(checkSecretaryReminders,30000);
+checkSecretaryReminders();
 async function sendCommand(){
  const command=$("command").value.trim();
  if(!command)return;
@@ -1267,47 +1333,47 @@ async function sendCommand(){
  }
  $("orb-status").textContent="PROCESSING · Claudeに接続中";
  $("equalizer").classList.remove("paused");
- $("response").textContent="Claudeが回答を生成しています...";
+ $("response").textContent="Claudeが会話の内容を確認しています...";
  $("send-command").disabled=true;
  try{
-  const jarvisPrompt=sachiMission
-   ? "あなたはJ.A.R.V.I.S.です。これはSACHIへの動画制作ミッションです。あなた自身で台本や動画本文を生成してはいけません。依頼内容を整理した制作指令だけを返してください。SACHIは指令受信後すぐに台本生成を開始します。動画の書き出しはユーザーが台本を確認した後に手動で行います。返答には受付案内と【SACHI制作指令】を含めてください。\n\nユーザーの指示："+command
-   : command;
+  if(!sachiMission){
+   const history=getSecretaryHistory();
+   const response=await fetch("/api/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-jarvis-password":accessPassword},
+    body:JSON.stringify({mode:"secretary",prompt:command,history})
+   });
+   const result=await response.json();
+   if(response.status===401){localStorage.removeItem("jarvis_access_password");throw new Error("パスワードが違います。もう一度送信して正しいパスワードを入力してください。");}
+   if(!response.ok)throw new Error(result.detail||result.error||"Claudeとの通信に失敗しました");
+   if(!result.secretary)throw new Error("会話判定の結果を取得できませんでした。");
+   const decision=result.secretary;
+   addSecretaryHistory(command,decision.reply||"");
+   renderSecretaryAction(decision,command);
+   if(decision.reply)speakAnswer(decision.reply);
+   $("orb-status").textContent="SECRETARY ANALYSIS COMPLETE · 判定完了";
+   log("会話判別："+decision.kind);
+   $("command").value="";
+   return;
+  }
+  const jarvisPrompt="あなたはJ.A.R.V.I.S.です。これはSACHIへの動画制作ミッションです。あなた自身で台本や動画本文を生成してはいけません。依頼内容を整理した制作指令だけを返してください。SACHIは指令受信後すぐに台本生成を開始します。動画の書き出しはユーザーが台本を確認した後に手動で行います。返答には受付案内と【SACHI制作指令】を含めてください。\n\nユーザーの指示："+command;
   const response=await fetch("/api/chat",{
    method:"POST",
    headers:{"Content-Type":"application/json","x-jarvis-password":accessPassword},
    body:JSON.stringify({prompt:jarvisPrompt})
   });
   const result=await response.json();
-  if(response.status===401){
-   localStorage.removeItem("jarvis_access_password");
-   throw new Error("パスワードが違います。もう一度送信して正しいパスワードを入力してください。");
-  }
+  if(response.status===401){localStorage.removeItem("jarvis_access_password");throw new Error("パスワードが違います。もう一度送信して正しいパスワードを入力してください。");}
   if(!response.ok)throw new Error(result.detail||result.error||"Claudeとの通信に失敗しました");
   $("response").textContent=result.answer||"回答を取得できませんでした。";
-  if(sachiMission){
-   const link=document.createElement("a");
-   link.href="video-studio.html?command="+encodeURIComponent(command);
-   link.textContent="▶ SACHI制作スタジオで受信内容・進捗を確認";
-   link.style.cssText="display:inline-block;margin-top:14px;padding:11px 15px;border:1px solid #57eaff;border-radius:9px;color:#8feaff;text-decoration:none;font-weight:bold";
-   $("response").appendChild(document.createElement("br"));
-   $("response").appendChild(link);
-  }
+  const link=document.createElement("a");link.href="video-studio.html?command="+encodeURIComponent(command);link.textContent="▶ SACHI制作スタジオで受信内容・進捗を確認";link.style.cssText="display:inline-block;margin-top:14px;padding:11px 15px;border:1px solid #57eaff;border-radius:9px;color:#8feaff;text-decoration:none;font-weight:bold";$("response").appendChild(document.createElement("br"));$("response").appendChild(link);
   if(result.answer)speakAnswer(result.answer);
-  $("orb-status").textContent="AI RESPONSE RECEIVED · 回答完了";
-  log(sachiMission?"SACHIへの制作指令を整理しました（制作は未開始）":"Claudeから回答を受信しました");
-  $("command").value="";
+  $("orb-status").textContent="AI RESPONSE RECEIVED · 回答完了";log("SACHIへの制作指令を整理しました（制作は未開始）");$("command").value="";
  }catch(error){
-  $("response").textContent="エラー："+error.message;
-  $("orb-status").textContent="CONNECTION ERROR · 接続エラー";
-  log("Claude接続エラー："+error.message);
+  $("response").textContent="エラー："+error.message;$("orb-status").textContent="CONNECTION ERROR · 接続エラー";log("Claude接続エラー："+error.message);
  }finally{
   $("send-command").disabled=false;
-  setTimeout(()=>{
-   if($("orb-status").textContent!=="CONNECTION ERROR · 接続エラー"){
-    $("orb-status").textContent="SYSTEM STANDBY · 待機中";
-   }
-  },5000);
+  setTimeout(()=>{if($("orb-status").textContent!=="CONNECTION ERROR · 接続エラー")$("orb-status").textContent="SYSTEM STANDBY · 待機中";},5000);
  }
 }
 $("send-command").addEventListener("click",sendCommand);
