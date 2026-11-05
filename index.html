@@ -513,18 +513,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
  .mini-calendar-day{min-height:30px}
 }
 
-.lower{grid-template-columns:repeat(2,minmax(0,1fr))}
-.weather-panel{min-width:0}
-.weather-main{display:flex;align-items:center;gap:14px;padding:8px 2px 12px}
-.weather-icon{font-size:42px;line-height:1;filter:drop-shadow(0 0 10px #57eaff55)}
-.weather-temp{font-size:32px;font-weight:700;line-height:1.1;color:var(--cyan);font-variant-numeric:tabular-nums}
-.weather-description{font-size:11px;color:#b7d0e3;margin-top:5px}
-.weather-details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.weather-detail{padding:9px 7px;border:1px solid #173b54;border-radius:8px;background:#061425;min-width:0}
-.weather-detail small{display:block;color:var(--muted);font-size:9px}
-.weather-detail strong{display:block;color:#e6f8ff;font-size:13px;margin-top:5px;font-variant-numeric:tabular-nums}
-.weather-updated{font-size:9px;color:var(--muted);margin-top:10px;text-align:right}
-@media(max-width:700px){.lower{grid-template-columns:1fr}}
+.lower{grid-template-columns:minmax(0,1fr)}
 </style>
 </head>
 <body>
@@ -647,22 +636,6 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
     <div class="activity" id="activity">
      <div class="activity-item"><span class="activity-dot"></span><div class="activity-copy">J.A.R.V.I.S.の司令室を起動しました。<span class="activity-time">起動時</span></div></div>
     </div>
-   </div>
-   <div class="panel weather-panel">
-    <div class="panel-title"><h3>TODAY'S WEATHER</h3><span>TOYAMA · LIVE</span></div>
-    <div class="weather-main">
-     <div class="weather-icon" id="weather-icon" aria-hidden="true">⛅</div>
-     <div>
-      <div class="weather-temp" id="weather-temperature">--°C</div>
-      <div class="weather-description" id="weather-description">今日の天気を取得中...</div>
-     </div>
-    </div>
-    <div class="weather-details">
-     <div class="weather-detail"><small>最高気温</small><strong id="weather-high">--°C</strong></div>
-     <div class="weather-detail"><small>最低気温</small><strong id="weather-low">--°C</strong></div>
-     <div class="weather-detail"><small>降水確率</small><strong id="weather-rain">--%</strong></div>
-    </div>
-    <div class="weather-updated" id="weather-updated">天気データを読み込んでいます</div>
    </div>
   </div>
  </section>
@@ -1411,40 +1384,6 @@ async function sendCommand(){
 }
 $("send-command").addEventListener("click",sendCommand);
 $("command").addEventListener("keydown",e=>{if(e.key==="Enter")sendCommand()});
-
-const weatherDescriptions={
- 0:["晴れ","☀️"],1:["おおむね晴れ","🌤️"],2:["晴れ時々くもり","⛅"],3:["くもり","☁️"],
- 45:["霧","🌫️"],48:["着氷性の霧","🌫️"],51:["弱い霧雨","🌦️"],53:["霧雨","🌦️"],55:["強い霧雨","🌧️"],
- 56:["弱い凍雨","🌧️"],57:["強い凍雨","🌧️"],61:["弱い雨","🌧️"],63:["雨","🌧️"],65:["強い雨","🌧️"],
- 66:["弱い凍雨","🌧️"],67:["強い凍雨","🌧️"],71:["弱い雪","🌨️"],73:["雪","❄️"],75:["強い雪","❄️"],
- 77:["雪あられ","🌨️"],80:["にわか雨","🌦️"],81:["雨時々強く降る","🌧️"],82:["激しいにわか雨","⛈️"],
- 85:["にわか雪","🌨️"],86:["強いにわか雪","❄️"],95:["雷雨","⛈️"],96:["ひょうを伴う雷雨","⛈️"],99:["激しい雷雨","⛈️"]
-};
-async function loadTodayWeather(){
- const updated=$("weather-updated");
- try{
-  const url="https://api.open-meteo.com/v1/forecast?latitude=36.6953&longitude=137.2113&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone=Asia%2FTokyo";
-  const response=await fetch(url,{cache:"no-store"});
-  if(!response.ok)throw new Error("天気データを取得できません");
-  const data=await response.json();
-  const current=data.current||{},daily=data.daily||{};
-  const code=Number(current.weather_code);
-  const description=weatherDescriptions[code]||["天気情報","🌤️"];
-  $("weather-icon").textContent=description[1];
-  $("weather-temperature").textContent=Number.isFinite(Number(current.temperature_2m))?Math.round(Number(current.temperature_2m))+"°C":"--°C";
-  $("weather-description").textContent=description[0];
-  $("weather-high").textContent=Number.isFinite(Number(daily.temperature_2m_max?.[0]))?Math.round(Number(daily.temperature_2m_max[0]))+"°C":"--°C";
-  $("weather-low").textContent=Number.isFinite(Number(daily.temperature_2m_min?.[0]))?Math.round(Number(daily.temperature_2m_min[0]))+"°C":"--°C";
-  $("weather-rain").textContent=Number.isFinite(Number(daily.precipitation_probability_max?.[0]))?Math.round(Number(daily.precipitation_probability_max[0]))+"%":"--%";
-  updated.textContent="最終更新："+new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"})+" ／ Open-Meteo";
- }catch(error){
-  $("weather-description").textContent="天気を取得できません";
-  updated.textContent="通信を確認してください";
-  log("今日の天気を取得できませんでした");
- }
-}
-loadTodayWeather();
-setInterval(loadTodayWeather,30*60*1000);
 
 function updateClock(){
  $("clock").textContent=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
