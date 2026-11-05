@@ -577,6 +577,21 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 .rain-radar-credit a{color:#82cfff}
 @media(max-width:700px){#rain-radar-map{height:260px}.rain-radar-head{align-items:flex-start;flex-direction:column}.rain-radar-time{min-width:95px}}
 
+
+/* COMPACT SIDE-BY-SIDE WEATHER TOOLS */
+.weather-tools-row{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:12px;align-items:stretch;margin-bottom:16px}
+.weather-tools-row .hourly-weather{margin:0;min-width:0}
+.weather-tools-row .rain-radar-panel{margin:0;min-width:0;padding:12px}
+.weather-tools-row #rain-radar-map{height:172px}
+.weather-tools-row .rain-radar-head{margin-bottom:8px}
+.weather-tools-row .rain-radar-caption{font-size:8px}
+.weather-tools-row .rain-radar-controls{gap:6px;margin-top:7px}
+.weather-tools-row .rain-radar-button{padding:6px 8px;font-size:9px}
+.weather-tools-row #rain-radar-range{min-width:60px}
+.weather-tools-row .rain-radar-time{font-size:9px;min-width:70px}
+.weather-tools-row .rain-radar-status{font-size:8px;margin-top:6px}
+@media(max-width:760px){.weather-tools-row{grid-template-columns:minmax(0,1fr)}.weather-tools-row #rain-radar-map{height:190px}}
+
 </style>
  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 </head>
@@ -621,6 +636,7 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
    <div class="weather-status" id="weather-status">WEATHER LOADING</div>
   </div>
 
+  <div class="weather-tools-row">
   <div class="hourly-weather" id="hourly-weather">
    <div class="hourly-heading"><div class="hourly-title">HOURLY FORECAST</div><div class="hourly-caption">これからの時間ごとの予報</div></div>
    <div class="hourly-list" id="hourly-weather-list"><div class="hourly-empty">時間別予報を取得しています...</div></div>
@@ -644,6 +660,9 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
     <span class="rain-radar-credit">Weather data by <a href="https://www.rainviewer.com/" target="_blank" rel="noopener noreferrer">RainViewer</a> · Map © OpenStreetMap</span>
    </div>
   </div>
+  </div>
+
+
 
 
   <div class="dashboard">
