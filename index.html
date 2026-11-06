@@ -107,7 +107,21 @@ h2{font-size:24px;letter-spacing:1px;margin:7px 0}
 }
 .orb-wrap > *{pointer-events:none}
 .orb-wrap:focus-visible{outline:2px solid #50e8ff;outline-offset:8px;border-radius:50%}
-.orb-wrap.listening .orb{filter:brightness(1.35);box-shadow:0 0 45px #20dfff9c, inset 0 0 28px #20dfff55}
+.orb-wrap.listening .orb{
+  background:radial-gradient(circle at 32% 25%,#ffffff 0%,#ffe1e5 5%,#ff8294 14%,#ff294d 33%,#bd1235 56%,#2f0713 74%,#100208 82%);
+  filter:brightness(1.25);
+  box-shadow:0 0 22px #ff3658,0 0 52px #ff174dba,0 0 100px #ff174d55,
+    inset -12px -15px 25px #18030a,inset 7px 7px 22px #ffe0e6b8;
+}
+.orb-wrap.listening .orb-halo{background:radial-gradient(circle,#ff174d35 0%,transparent 67%)}
+.orb-wrap.listening .orb-ring{border-color:#ff7187;box-shadow:0 0 18px #ff365866,inset 0 0 15px #ff174d35}
+.orb-wrap.listening .orb-ring:before{border-color:#ff7187aa}
+.orb-wrap.listening .orb-ring:after{background:linear-gradient(90deg,transparent,#ff526e,transparent);box-shadow:0 0 9px #ff3658}
+.orb-wrap.listening .orb-ring-two{border-color:#ff365899;box-shadow:0 0 14px #ff174d44}
+.orb-wrap.listening .orb-ring-three{border-color:#ff829477}
+.orb-wrap.listening + .orb-label,.orb-wrap.listening ~ .orb-label{color:#ff7187}
+#equalizer:not(.paused) i{background:var(--cyan)}
+#orb-voice.listening ~ .equalizer i{background:#ff526e}
 .orb-halo{
   position:absolute;inset:0;border-radius:50%;
   background:radial-gradient(circle,#1ac9ff17 0%,transparent 67%);
